@@ -3,10 +3,12 @@
 import { Loader2 } from "lucide-react";
 import { useFormStatus } from "react-dom";
 
-import { Button, type ButtonProps } from "./ui/button";
+import { Button } from "./ui/button";
+import type { ButtonHTMLAttributes, ReactNode } from "react";
 
-type Props = ButtonProps & {
+type Props = ButtonHTMLAttributes<HTMLButtonElement> & {
   pendingText?: string;
+  children: ReactNode;
 };
 
 const FormSubmitButton = ({

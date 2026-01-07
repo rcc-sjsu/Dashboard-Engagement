@@ -18,7 +18,8 @@
     "build": "turbo build",
     "check-types": "turbo check-types",
     "dev:native": "turbo -F native dev",
-    "dev:web": "turbo -F web dev"
+    "dev:web": "turbo -F web dev",
+    "dev:server": "turbo -F server dev"
   },
   "dependencies": {
     "@RCC-Dash/env": "workspace:*",

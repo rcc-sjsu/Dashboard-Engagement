@@ -15,7 +15,8 @@ RCC-Dash is a Turborepo monorepo for a dashboard web app and shared packages.
 ```
 RCC-Dash/
 ├── apps/
-│   └── web/           # Next.js web app
+│   ├── web/           # Next.js web app
+│   └── server/        # FastAPI backend
 └── packages/
     ├── config/        # Shared TS config
     └── env/           # Shared env schemas (server/web/native)
@@ -23,34 +24,40 @@ RCC-Dash/
 
 ## Getting Started
 
-Prerequisite: Bun 1.2+
+Prerequisites: Bun 1.2+ and Python 3.10+
 
 Install dependencies:
 
 ```bash
 bun install
+# (optional) Create a venv inside apps/server
+pip install -r apps/server/requirements.txt
 ```
 
-Run all apps (currently just web):
+Run all apps (web + server):
 
 ```bash
 bun run dev
 ```
 
-Run only the web app:
+Run only one app:
 
 ```bash
 bun run dev:web
+bun run dev:server
 ```
 
-Open http://localhost:3000.
+Open:
+
+- Web: http://localhost:3000
+- Server: http://localhost:8000 (docs at /docs)
 
 ## Environment Variables
 
 Edit `apps/web/.env` as needed:
 
 ```bash
-NEXT_PUBLIC_SERVER_URL=http://localhost:3000
+NEXT_PUBLIC_SERVER_URL=http://localhost:8000
 ```
 
 Shared env schemas live in `packages/env/src/*.ts`.
