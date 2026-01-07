@@ -1,6 +1,6 @@
 # FastAPI Server
 
-FastAPI backend for repo.
+FastAPI backend for RCC Dashboard and Engagement Tool.
 
 ## Local Development
 

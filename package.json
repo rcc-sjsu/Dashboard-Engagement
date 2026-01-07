@@ -1,5 +1,5 @@
 {
-  "name": "repo",
+  "name": "dashboard-monorepo",
   "private": true,
   "workspaces": {
     "packages": [

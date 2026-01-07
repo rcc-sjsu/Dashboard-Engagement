@@ -20,8 +20,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "repo",
-  description: "repo",
+  title: "RCC Dashboard and Engagement Tool",
+  description: "A dashboard and engagement tool for RCC Club SJSU.",
 };
 
 export default function RootLayout({
@@ -33,10 +33,7 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning className={inter.variable}>
       <body className={`${spaceGrotesk.variable} ${geistMono.variable} antialiased`}>
         <Providers>
-          <div className="grid grid-rows-[auto_1fr] h-svh">
-            <Header />
-            {children}
-          </div>
+          {children}
         </Providers>
       </body>
     </html>

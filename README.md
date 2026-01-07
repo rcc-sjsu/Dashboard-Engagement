@@ -1,6 +1,6 @@
-# repo
+# RCC Dashboard and Engagement Tool
 
-repo is a Turborepo monorepo for a dashboard web app and shared packages.
+RCC Dashboard and Engagement Tool is a Turborepo monorepo for a dashboard web app and shared packages.
 
 ## Tech Stack
 
@@ -13,7 +13,7 @@ repo is a Turborepo monorepo for a dashboard web app and shared packages.
 ## Repository Layout
 
 ```
-repo/
+Turborepo/
 ├── apps/
 │   ├── web/           # Next.js web app
 │   └── server/        # FastAPI backend

@@ -35,7 +35,6 @@ export async function updateSession(request: NextRequest) {
   const isAuthRoute =
     pathname.startsWith("/signin") ||
     pathname.startsWith("/signup") ||
-    pathname.startsWith("/auth") ||
     pathname.startsWith("/api/auth");
 
   // Redirect logged-out visitors to the sign-in page, but allow auth routes.
