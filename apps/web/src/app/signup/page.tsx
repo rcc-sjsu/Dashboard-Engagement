@@ -4,7 +4,7 @@ import { Label } from "@/components/ui/label";
 import { signUpWithPassword } from "@/lib/actions";
 import { cn } from "@/lib/utils";
 import { GalleryVerticalEnd } from "lucide-react";
-import { createClient } from "@RCC-Dash/supabase/server";
+import { createClient } from "@repo/supabase/server";
 import { redirect } from "next/navigation";
 import FormSubmitButton from "@/components/form-submit-button";
 

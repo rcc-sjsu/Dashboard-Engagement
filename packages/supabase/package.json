@@ -1,15 +1,15 @@
 {
-  "name": "@RCC-Dash/supabase",
+  "name": "@repo/supabase",
   "version": "0.0.0",
   "private": true,
   "type": "module",
   "dependencies": {
-    "@RCC-Dash/env": "workspace:*",
+    "@repo/env": "workspace:*",
     "@supabase/ssr": "^0.8.0",
     "@supabase/supabase-js": "^2.48.0"
   },
   "devDependencies": {
-    "@RCC-Dash/config": "workspace:*",
+    "@repo/config": "workspace:*",
     "typescript": "catalog:"
   },
   "exports": {

@@ -2,14 +2,14 @@
   "lockfileVersion": 1,
   "workspaces": {
     "": {
-      "name": "RCC-Dash-1",
+      "name": "repo-1",
       "dependencies": {
-        "@RCC-Dash/env": "workspace:*",
+        "@repo/env": "workspace:*",
         "dotenv": "catalog:",
         "zod": "catalog:",
       },
       "devDependencies": {
-        "@RCC-Dash/config": "workspace:*",
+        "@repo/config": "workspace:*",
         "turbo": "^2.6.3",
         "typescript": "catalog:",
       },
@@ -21,8 +21,8 @@
       "name": "web",
       "version": "0.1.0",
       "dependencies": {
-        "@RCC-Dash/env": "workspace:*",
-        "@RCC-Dash/supabase": "workspace:*",
+        "@repo/env": "workspace:*",
+        "@repo/supabase": "workspace:*",
         "@base-ui/react": "^1.0.0",
         "@hugeicons/core-free-icons": "^3.1.1",
         "@hugeicons/react": "^1.1.4",
@@ -47,7 +47,7 @@
         "zod": "catalog:",
       },
       "devDependencies": {
-        "@RCC-Dash/config": "workspace:*",
+        "@repo/config": "workspace:*",
         "@tailwindcss/postcss": "^4.1.10",
         "@types/node": "^20",
         "@types/react": "^19.2.7",
@@ -57,11 +57,11 @@
       },
     },
     "packages/config": {
-      "name": "@RCC-Dash/config",
+      "name": "@repo/config",
       "version": "0.0.0",
     },
     "packages/env": {
-      "name": "@RCC-Dash/env",
+      "name": "@repo/env",
       "version": "0.0.0",
       "dependencies": {
         "@t3-oss/env-nextjs": "^0.13.1",
@@ -69,20 +69,20 @@
         "zod": "catalog:",
       },
       "devDependencies": {
-        "@RCC-Dash/config": "workspace:*",
+        "@repo/config": "workspace:*",
         "typescript": "catalog:",
       },
     },
     "packages/supabase": {
-      "name": "@RCC-Dash/supabase",
+      "name": "@repo/supabase",
       "version": "0.0.0",
       "dependencies": {
-        "@RCC-Dash/env": "workspace:*",
+        "@repo/env": "workspace:*",
         "@supabase/ssr": "^0.8.0",
         "@supabase/supabase-js": "^2.48.0",
       },
       "devDependencies": {
-        "@RCC-Dash/config": "workspace:*",
+        "@repo/config": "workspace:*",
         "typescript": "catalog:",
       },
     },
@@ -93,11 +93,11 @@
     "zod": "^4.1.13",
   },
   "packages": {
-    "@RCC-Dash/config": ["@RCC-Dash/config@workspace:packages/config"],
+    "@repo/config": ["@repo/config@workspace:packages/config"],
 
-    "@RCC-Dash/env": ["@RCC-Dash/env@workspace:packages/env"],
+    "@repo/env": ["@repo/env@workspace:packages/env"],
 
-    "@RCC-Dash/supabase": ["@RCC-Dash/supabase@workspace:packages/supabase"],
+    "@repo/supabase": ["@repo/supabase@workspace:packages/supabase"],
 
     "@alloc/quick-lru": ["@alloc/quick-lru@5.2.0", "", {}, "sha512-UrcABB+4bUrFABwbluTIBErXwvbsU/V7TZWfmbgJfbkwiBuziS9gxdODUyuiecfdGQ85jglMW6juS3+z5TsKLw=="],
 

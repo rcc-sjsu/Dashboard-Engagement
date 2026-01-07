@@ -1,6 +1,6 @@
 
 import SignOutButton from "@/components/SignOutButton";
-import { createClient } from "@RCC-Dash/supabase/server";
+import { createClient } from "@repo/supabase/server";
 import { redirect } from "next/navigation";
 
 export default async function Page() {

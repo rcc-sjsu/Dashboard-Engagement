@@ -1,7 +1,7 @@
 "use server";
 import { redirect } from "next/navigation";
-import { createClient } from "@RCC-Dash/supabase/server";
-import type { Provider } from "@RCC-Dash/supabase/types";
+import { createClient } from "@repo/supabase/server";
+import type { Provider } from "@repo/supabase/types";
 import { revalidatePath } from "next/cache";
 
 const signInWithPassword = async (formData: FormData) => {

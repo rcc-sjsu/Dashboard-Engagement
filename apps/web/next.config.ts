@@ -1,4 +1,4 @@
-import "@RCC-Dash/env/web";
+import "@repo/env/web";
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {

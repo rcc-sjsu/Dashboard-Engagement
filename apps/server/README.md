@@ -1,6 +1,6 @@
 # FastAPI Server
 
-FastAPI backend for RCC-Dash.
+FastAPI backend for repo.
 
 ## Local Development
 

@@ -1,6 +1,6 @@
 import { GalleryVerticalEnd } from "lucide-react";
 import { redirect } from "next/navigation";
-import { createClient } from "@RCC-Dash/supabase/server";
+import { createClient } from "@repo/supabase/server";
 import { cn } from "@/lib/utils";
 
 import { signInWithPassword } from "@/lib/actions";

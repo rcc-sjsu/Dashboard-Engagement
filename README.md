@@ -1,6 +1,6 @@
-# RCC-Dash
+# repo
 
-RCC-Dash is a Turborepo monorepo for a dashboard web app and shared packages.
+repo is a Turborepo monorepo for a dashboard web app and shared packages.
 
 ## Tech Stack
 
@@ -13,7 +13,7 @@ RCC-Dash is a Turborepo monorepo for a dashboard web app and shared packages.
 ## Repository Layout
 
 ```
-RCC-Dash/
+repo/
 ├── apps/
 │   ├── web/           # Next.js web app
 │   └── server/        # FastAPI backend
