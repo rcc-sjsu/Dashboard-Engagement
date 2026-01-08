@@ -21,6 +21,7 @@ import { redirect } from "next/navigation";
 type SignUpValues = {
   email: string;
   password: string;
+  displayName: string;
 };
 
 const initialState: AuthState = {
@@ -37,6 +38,7 @@ const SignUpForm = () => {
     defaultValues: {
       email: "",
       password: "",
+      displayName: "",
     },
   });
 
@@ -75,6 +77,26 @@ const SignUpForm = () => {
           </div>
         </div>
         <div className="flex flex-col gap-6">
+          <FormField
+            control={form.control}
+            name="displayName"
+            rules={{ required: "Display name is required" }}
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Display Name</FormLabel>
+                <FormControl>
+                  <Input
+                    type="text"
+                    placeholder="How should we address you?"
+                    autoComplete="name"
+                    required
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
           <FormField
             control={form.control}
             name="email"

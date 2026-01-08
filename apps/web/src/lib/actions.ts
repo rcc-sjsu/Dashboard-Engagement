@@ -65,19 +65,27 @@ const signUpWithPassword = async (
   formData: FormData,
 ): Promise<AuthState> => {
   const supabase = await createClient();
-  const data = {
+  const credentials = {
     email: formData.get("email") as string,
     password: formData.get("password") as string,
   };
-  const { data: signUpData, error } = await supabase.auth.signUp(data);
+  const displayName =
+    (formData.get("displayName") as string | null)?.trim() || undefined;
 
-  if (signUpData.user) {
-    const message ="An account with this email already exists.";
+  const { data: signUpData, error } = await supabase.auth.signUp({
+    ...credentials,
+    options: {
+      data: displayName ? { display_name: displayName } : undefined,
+    },
+  });
 
-    return { error: message };
-  }
-  
   if (error) {
+    const isExistingUser = error.message?.toLowerCase().includes("already");
+
+    if (isExistingUser) {
+      return redirect("/signin");
+    }
+
     return { error: error.message };
   }
 
@@ -91,4 +99,14 @@ const signUpWithPassword = async (
   return redirect("/");
 };
 
-export { signInWithPassword, signInWithOAuth, signUpWithPassword, signOut };
+const getUser = async () => {
+  const supabase = await createClient();
+  const {
+    data
+  } = await supabase.auth.getUserIdentities();
+  console.log("User identities data:", data?.identities[0].identity_data);
+
+  return data?.identities[0].identity_data || null;
+}
+
+export { signInWithPassword, signInWithOAuth, signUpWithPassword, signOut, getUser };
