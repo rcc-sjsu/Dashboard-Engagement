@@ -9,6 +9,12 @@ export type AuthState = {
   success?: string;
 };
 
+const getBaseUrl = () => {
+  if (process.env.NEXT_PUBLIC_BASE_URL) return process.env.NEXT_PUBLIC_BASE_URL;
+  if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
+  return "http://localhost:3000";
+};
+
 const signInWithPassword = async (
   _prevState: AuthState,
   formData: FormData,
@@ -96,6 +102,58 @@ const signUpWithPassword = async (
   return redirect("/");
 };
 
+const requestPasswordReset = async (
+  _prevState: AuthState,
+  formData: FormData,
+): Promise<AuthState> => {
+  const supabase = await createClient();
+  const email = (formData.get("email") as string | null)?.trim();
+
+  if (!email) {
+    return { error: "Email is required" };
+  }
+
+  const redirectTo = `${getBaseUrl()}/api/auth/callback?next=/reset-password`;
+  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo,
+  });
+
+  if (error) {
+    return { error: error.message };
+  }
+
+  return { success: "Check your email for the reset link." };
+};
+
+const updatePassword = async (
+  _prevState: AuthState,
+  formData: FormData,
+): Promise<AuthState> => {
+  const supabase = await createClient();
+  const password = (formData.get("password") as string | null)?.trim();
+  const confirmPassword = (formData.get("confirmPassword") as string | null)?.trim();
+
+  if (!password) {
+    return { error: "Password is required" };
+  }
+
+  if (password.length < 8) {
+    return { error: "Password must be at least 8 characters." };
+  }
+
+  if (password !== confirmPassword) {
+    return { error: "Passwords do not match." };
+  }
+
+  const { error } = await supabase.auth.updateUser({ password });
+
+  if (error) {
+    return { error: error.message };
+  }
+
+  return { success: "Password updated. You can close this tab or continue." };
+};
+
 const getUser = async () => {
   const supabase = await createClient();
   const {
@@ -105,4 +163,12 @@ const getUser = async () => {
   return data?.identities[0].identity_data || null;
 }
 
-export { signInWithPassword, signInWithOAuth, signUpWithPassword, signOut, getUser };
+export {
+  signInWithPassword,
+  signInWithOAuth,
+  signUpWithPassword,
+  signOut,
+  getUser,
+  requestPasswordReset,
+  updatePassword,
+};
