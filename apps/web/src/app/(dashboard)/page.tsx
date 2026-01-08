@@ -8,6 +8,7 @@ import { ChartLineMultiple } from "@/components/ui/line-graph"
 import { ChartPieLabelList } from "@/components/ui/pie-chart"
 import { ChartBarStacked } from "@/components/ui/stacked-bar-chart"
 import { ChartBarHorizontal } from "@/components/ui/ChartBarHorizontal";
+import { BigNumber } from "@/components/ui/kpi"
 
 export default async function Page() {
   const supabase = await createClient();
@@ -33,12 +34,24 @@ export default async function Page() {
         <div className="items-center">
 
         
-        <div className="flex flex-col gap-20 items-center">
-          <div className="flex flex-row gap-20">
-            <ChartBarDefault></ChartBarDefault>
-            <ChartBarDefault></ChartBarDefault>
-            <ChartBarDefault></ChartBarDefault>
-          </div>
+        <div className="flex flex-col w-full gap-20 ">
+           <div className="flex w-full gap-20">
+              <div className="flex-1">
+                <BigNumber />
+              </div>
+              <div className="flex-1">
+                <BigNumber />
+              </div>
+            </div>
+
+            <div className="flex w-full gap-20">
+              <div className="flex-1">
+                <BigNumber />
+              </div>
+              <div className="flex-1">
+                <BigNumber />
+              </div>
+            </div>
         
           <div className="w-full">
             <ChartLineMultiple></ChartLineMultiple>
