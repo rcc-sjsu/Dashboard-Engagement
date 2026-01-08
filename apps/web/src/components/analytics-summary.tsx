@@ -5,11 +5,14 @@ import { fetchDashboardData, type AnalyticsDashboard } from '@/lib/analytics';
 
 
 export default function AnalyticsSummary() {
-  const [stats, setStats] = useState<AnalyticsDashboard | null>(null);
+  const [stats, setStats] = useState<any | null>(null);
 
   useEffect(() => {
-    fetchDashboardData().then(setStats);
-  }, []);
+  fetchDashboardData().then((data) => {
+    console.log("Dashboard Response:", data); 
+    setStats(data);
+  });
+}, []);
 
   if(stats == null){
     return <div>Loading stats...</div>;
@@ -18,12 +21,14 @@ export default function AnalyticsSummary() {
     return (
     <div>
       <h2 className="text-xl font-bold">Dashboard Stats</h2>
-      <ul>
-        {/* Notice we added .overview.kpis to get to the data! */}
+       <pre> {JSON.stringify(stats)} </pre>
+      {/* <ul>
+        
         <li>Total Members: {stats.overview.kpis.total_members}</li>
         <li>Active Members: {stats.overview.kpis.active_members}</li>
         <li>Growth: {stats.overview.kpis.registered_growth_last_30d_pct}%</li>
-      </ul>    
+
+      </ul>     */}
     </div>
   );
 }

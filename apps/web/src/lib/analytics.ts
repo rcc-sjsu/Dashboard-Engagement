@@ -1,14 +1,14 @@
 
 //API Wiring, fetch and recieve JSON
 
-//nesting the objects according to the API contract
-export interface AnalyticsDashboard {
+//according to analytics/dashboard (seed data)
+export interface AnalyticsDashboard { //obj shape
     meta: { start: string; end: string };
   overview: {
     kpis: {
       total_members: number;
       active_members: number;
-      active_member_pct: number; // Note: Julia's seed uses pct (singular)
+      active_member_pct: number; 
       registered_growth_last_30d_pct: number;
     };
   };
@@ -17,15 +17,12 @@ export interface AnalyticsDashboard {
   };
 }
 
-}
 
-export const fetchDashboardData = async (): Promise<AnalyticsDashboard> => {
+
+export const fetchDashboardData = async () => {
     try{
-        const response = await fetch("http://localhost:8000/analytics/dashboard"); //wait for update
+        const response = await fetch("http://localhost:8000/analytics"); //wait for update
 
-        if (!response.ok) {
-            throw new Error("Endpoint not found ");
-        }
 
         const data = await response.json();
         console.log("Data fetched");
@@ -34,15 +31,9 @@ export const fetchDashboardData = async (): Promise<AnalyticsDashboard> => {
     } catch(error){   //placeholder
         console.log("Mock Data:")
 
-       return {
-         overview: {
-        kpis: {
-          total_members: 150,
-          active_members: 45,
-          active_members_pct: 30.0,
-          registered_growth_last_30d_pct: 5.2
-        }
-      }
-    };
+       return (
+         error
+      )
+    
   }
 };
