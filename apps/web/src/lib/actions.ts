@@ -159,6 +159,8 @@ const getUser = async () => {
     data
   } = await supabase.auth.getUserIdentities();
 
+  console.log("User identities data:", data!.identities[0].identity_data);
+
   return data?.identities[0].identity_data || null;
 }
 
