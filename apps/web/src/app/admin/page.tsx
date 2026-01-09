@@ -15,6 +15,27 @@ import { Button } from "@/components/ui/button"
 import { TextCard } from "@/components/ui/text-card"
 
 import UploadArea from "@/components/ui/csvupload"
+
+const handleImport = async () => {
+  try {
+    const response = await fetch("api/import-data/event-attendance", {
+      method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+
+        //send file over
+        body: JSON.stringify({ }), 
+    })
+
+    if (!response.ok){
+      throw new Error("Import failed")
+    }
+  } catch (error) {
+    console.error("Error: " + error);
+  }
+}
+
 export default async function AdminPage() {
   const supabase = await createClient();
   const {
@@ -31,7 +52,6 @@ export default async function AdminPage() {
         
         <div className="flex flex-col mb-5 gap-5">
           <h1 className="text-3xl font-semibold">Admin Page</h1>
-          
         </div>
             <div>
                 <div className="flex flex-col gap-10">
@@ -49,7 +69,7 @@ export default async function AdminPage() {
                             <UploadArea></UploadArea>
                         </div>
                     <div>
-                        <Button className="pl-10 pr-10">Import Data</Button>
+                        <Button className="pl-10 pr-10" onClick={handleImport}>Import Data</Button>
                     </div>
                 </div> 
             <div>
