@@ -15,7 +15,6 @@ interface BigNumberProps {
   title?: string;
   description?: string;
   value: number | string;
-  trend?: string;
   trendValue?: number;
   showTrend?: boolean;
 }
@@ -24,7 +23,6 @@ export function BigNumber({
   title = "Total Visitors",
   description = "January – June 2024",
   value,
-  trend,
   trendValue,
   showTrend = false
 }: BigNumberProps) {
@@ -44,11 +42,17 @@ export function BigNumber({
         </div>
       </CardContent>
 
-      {showTrend && (trend || trendValue !== undefined) && (
+      {showTrend && trendValue !== undefined && (
         <CardFooter className="flex-col items-start gap-2 text-sm">
           <div className="flex gap-2 leading-none font-medium">
-            {trend || `Trending up by ${trendValue}% this month`} <TrendingUp className="h-4 w-4" />
+            Growing by {trendValue}% in the last 30 days <TrendingUp className="h-4 w-4" />
           </div>
+        </CardFooter>
+      )}
+      
+      {!showTrend && (
+        <CardFooter className="flex-col items-start gap-2 text-sm">
+          <div className="h-4"></div>
         </CardFooter>
       )}
     </Card>

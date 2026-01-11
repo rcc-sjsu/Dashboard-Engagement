@@ -39,12 +39,16 @@ interface ChartLineMultipleProps {
   }>;
   title?: string;
   description?: string;
+  trend?: string;
+  showTrend?: boolean;
 }
 
 export function ChartLineMultiple({ 
   data,
   title = "Line Chart - Multiple",
-  description = "January - June 2024"
+  description = "January - June 2024",
+  trend,
+  showTrend = false
 }: ChartLineMultipleProps) {
   // Fallback to mock data if no data provided
   const chartData = data || [
@@ -55,6 +59,22 @@ export function ChartLineMultiple({
     { month: "May", registered: 209, active: 130 },
     { month: "June", registered: 214, active: 140 },
   ];
+
+  // Format period like "2025-09" to "Sep"
+  const formatPeriod = (period: string) => {
+    if (!period) return '';
+    
+    // Check if it's in YYYY-MM format
+    if (period.includes('-')) {
+      const [year, month] = period.split('-');
+      const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
+                          'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      return monthNames[parseInt(month) - 1] || period;
+    }
+    
+    // Otherwise just take first 3 chars
+    return period.slice(0, 3);
+  };
 
   return (
     <Card>
@@ -78,7 +98,7 @@ export function ChartLineMultiple({
               tickLine={false}
               axisLine={false}
               tickMargin={8}
-              tickFormatter={(value) => value.slice(0, 3)}
+              tickFormatter={formatPeriod}
             />
             <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
             <Legend /> 
@@ -101,18 +121,22 @@ export function ChartLineMultiple({
           </LineChart>
         </ChartContainer>
       </CardContent>
-      <CardFooter>
-        <div className="flex w-full items-start gap-2 text-sm">
-          <div className="grid gap-2">
-            <div className="flex items-center gap-2 leading-none font-medium">
-              Trending up by 5.2% this month <TrendingUp className="h-4 w-4" />
-            </div>
-            <div className="text-muted-foreground flex items-center gap-2 leading-none">
-              Showing total visitors for the last 6 months
+      {showTrend && trend && (
+        <CardFooter>
+          <div className="flex w-full items-start gap-2 text-sm">
+            <div className="grid gap-2">
+              <div className="flex items-center gap-2 leading-none font-medium">
+                {trend} <TrendingUp className="h-4 w-4" />
+              </div>
             </div>
           </div>
-        </div>
-      </CardFooter>
+        </CardFooter>
+      )}
+      {!showTrend && (
+        <CardFooter>
+          <div className="h-4"></div>
+        </CardFooter>
+      )}
     </Card>
   )
 }

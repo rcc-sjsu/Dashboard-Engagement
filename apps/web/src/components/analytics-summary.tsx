@@ -89,6 +89,13 @@ export default function AnalyticsSummary() {
     return <div className="text-center p-8 text-red-500">{error || "No data available"}</div>;
   }
 
+  // Format date range
+  const formatDate = (dateStr: string) => {
+    const date = new Date(dateStr);
+    return date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+  };
+  const dateRange = `${formatDate(data.meta.start)} - ${formatDate(data.meta.end)}`;
+
   // Transform data for line chart (members over time)
   const lineChartData = data.overview.members_over_time.map(item => ({
     month: item.period,
@@ -114,6 +121,10 @@ export default function AnalyticsSummary() {
     people: item.people
   }));
 
+  // Calculate growth trend text
+  const growthPct = (data.overview.kpis.registered_growth_last_30d_pct * 100).toFixed(1);
+  const growthTrend = `Growing by ${growthPct}% in the last 30 days`;
+
   return (
     <div className="flex flex-col w-full gap-20">
       {/* KPI Row 1 */}
@@ -121,12 +132,16 @@ export default function AnalyticsSummary() {
         <div className="flex-1">
           <BigNumber 
             title="Total Members"
+            description={dateRange}
             value={data.overview.kpis.total_members}
+            showTrend={true}
+            trendValue={parseFloat(growthPct)}
           />
         </div>
         <div className="flex-1">
           <BigNumber 
             title="Active Members"
+            description={dateRange}
             value={data.overview.kpis.active_members}
           />
         </div>
@@ -137,13 +152,15 @@ export default function AnalyticsSummary() {
         <div className="flex-1">
           <BigNumber 
             title="Active Member %"
+            description={dateRange}
             value={`${(data.overview.kpis.active_member_pct * 100).toFixed(1)}%`}
           />
         </div>
         <div className="flex-1">
           <BigNumber 
             title="30-Day Growth"
-            value={`${(data.overview.kpis.registered_growth_last_30d_pct * 100).toFixed(1)}%`}
+            description="Recent member registration"
+            value={`${growthPct}%`}
           />
         </div>
       </div>
@@ -153,6 +170,9 @@ export default function AnalyticsSummary() {
         <ChartLineMultiple 
           data={lineChartData}
           title="Member Growth Over Time"
+          description={dateRange}
+          trend={growthTrend}
+          showTrend={true}
         />
       </div>
       
@@ -163,12 +183,14 @@ export default function AnalyticsSummary() {
             <ChartPieLabelList 
               data={pieChartData}
               title="Members by Major Category"
+              description={dateRange}
             />
           </div>
           <div className="flex-[2] h-full">
             <ChartBarStacked 
               data={stackedBarData}
               title="Members by Class Year"
+              description={dateRange}
             />
           </div>
         </div>
@@ -179,6 +201,7 @@ export default function AnalyticsSummary() {
         <ChartBarHorizontal 
           data={horizontalBarData}
           title="Event Attendance Distribution"
+          description={`Overall attendance patterns`}
         />
       </div>
     </div>
