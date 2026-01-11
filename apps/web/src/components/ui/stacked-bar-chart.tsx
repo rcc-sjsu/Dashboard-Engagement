@@ -22,39 +22,53 @@ import {
 
 export const description = "A stacked bar chart with a legend"
 
-const chartData = [
-  { month: "January", desktop: 186, mobile: 80 },
-  { month: "February", desktop: 305, mobile: 200 },
-  { month: "March", desktop: 237, mobile: 120 },
-  { month: "April", desktop: 73, mobile: 190 },
-  { month: "May", desktop: 209, mobile: 130 },
-  { month: "June", desktop: 214, mobile: 140 },
-]
+interface ChartBarStackedProps {
+  data?: Array<{
+    category: string;
+    value: number;
+  }>;
+  title?: string;
+  description?: string;
+}
 
-const chartConfig = {
-  desktop: {
-    label: "Desktop",
-    color: "var(--chart-1)",
-  },
-  mobile: {
-    label: "Mobile",
-    color: "var(--chart-2)",
-  },
-} satisfies ChartConfig
+export function ChartBarStacked({ 
+  data,
+  title = "Bar Chart - Stacked + Legend",
+  description = "January - June 2024"
+}: ChartBarStackedProps) {
+  // Transform data for simple bar chart (not stacked since we only have one value per category)
+  const chartData = data || [
+    { month: "January", desktop: 186, mobile: 80 },
+    { month: "February", desktop: 305, mobile: 200 },
+    { month: "March", desktop: 237, mobile: 120 },
+    { month: "April", desktop: 73, mobile: 190 },
+    { month: "May", desktop: 209, mobile: 130 },
+    { month: "June", desktop: 214, mobile: 140 },
+  ];
 
-export function ChartBarStacked() {
+  const chartConfig = {
+    desktop: {
+      label: "Desktop",
+      color: "var(--chart-1)",
+    },
+    mobile: {
+      label: "Mobile",
+      color: "var(--chart-2)",
+    },
+  } satisfies ChartConfig
+
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Bar Chart - Stacked + Legend</CardTitle>
-        <CardDescription>January - June 2024</CardDescription>
+        <CardTitle>{title}</CardTitle>
+        <CardDescription>{description}</CardDescription>
       </CardHeader>
       <CardContent>
         <ChartContainer config={chartConfig}>
           <BarChart accessibilityLayer data={chartData}>
             <CartesianGrid vertical={false} />
             <XAxis
-              dataKey="month"
+              dataKey={data ? "category" : "month"}
               tickLine={false}
               tickMargin={10}
               axisLine={false}
@@ -63,17 +77,19 @@ export function ChartBarStacked() {
             <ChartTooltip content={<ChartTooltipContent hideLabel />} />
             <ChartLegend content={<ChartLegendContent />} />
             <Bar
-              dataKey="desktop"
+              dataKey={data ? "value" : "desktop"}
               stackId="a"
               fill="var(--color-desktop)"
               radius={[0, 0, 4, 4]}
             />
-            <Bar
-              dataKey="mobile"
-              stackId="a"
-              fill="var(--color-mobile)"
-              radius={[4, 4, 0, 0]}
-            />
+            {!data && (
+              <Bar
+                dataKey="mobile"
+                stackId="a"
+                fill="var(--color-mobile)"
+                radius={[4, 4, 0, 0]}
+              />
+            )}
           </BarChart>
         </ChartContainer>
       </CardContent>

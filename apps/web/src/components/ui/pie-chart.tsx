@@ -21,47 +21,48 @@ import { ToggleBar } from "@/components/ui/toggle"
 
 export const description = "A pie chart with a label list"
 
-const chartData = [
-  { browser: "chrome", visitors: 275, fill: "var(--color-chrome)" },
-  { browser: "safari", visitors: 200, fill: "var(--color-safari)" },
-  { browser: "firefox", visitors: 187, fill: "var(--color-firefox)" },
-  { browser: "edge", visitors: 173, fill: "var(--color-edge)" },
-  { browser: "other", visitors: 90, fill: "var(--color-other)" },
-]
+interface ChartPieLabelListProps {
+  data?: Array<{
+    name: string;
+    value: number;
+  }>;
+  title?: string;
+  description?: string;
+}
 
-const chartConfig = {
-  visitors: {
-    label: "Visitors",
-  },
-  chrome: {
-    label: "Chrome",
-    color: "var(--chart-1)",
-  },
-  safari: {
-    label: "Safari",
-    color: "var(--chart-2)",
-  },
-  firefox: {
-    label: "Firefox",
-    color: "var(--chart-3)",
-  },
-  edge: {
-    label: "Edge",
-    color: "var(--chart-4)",
-  },
-  other: {
-    label: "Other",
-    color: "var(--chart-5)",
-  },
-} satisfies ChartConfig
+export function ChartPieLabelList({ 
+  data,
+  title = "Pie Chart - Label List",
+  description = "January - June 2024"
+}: ChartPieLabelListProps) {
+  // Transform data and create dynamic config
+  const transformedData = data ? data.map((item, index) => ({
+    category: item.name,
+    visitors: item.value,
+    fill: `var(--chart-${(index % 5) + 1})`
+  })) : [
+    { category: "chrome", visitors: 275, fill: "var(--chart-1)" },
+    { category: "safari", visitors: 200, fill: "var(--chart-2)" },
+    { category: "firefox", visitors: 187, fill: "var(--chart-3)" },
+    { category: "edge", visitors: 173, fill: "var(--chart-4)" },
+    { category: "other", visitors: 90, fill: "var(--chart-5)" },
+  ];
 
-export function ChartPieLabelList() {
+  // Create dynamic chart config
+  const chartConfig = transformedData.reduce((acc, item, index) => {
+    acc[item.category] = {
+      label: item.category,
+      color: `var(--chart-${(index % 5) + 1})`,
+    };
+    return acc;
+  }, { visitors: { label: "Visitors" } } as ChartConfig);
+
   return (
     <ResponsiveContainer width="100%" height="100%">
     <Card className="flex flex-col h-full justify-between">
       <CardHeader className="items-center pb-0">
-        <CardTitle>Pie Chart - Label List</CardTitle>
-        <CardDescription>January - June 2024</CardDescription>
+        <CardTitle>{title}</CardTitle>
+        <CardDescription>{description}</CardDescription>
       </CardHeader>
       <ToggleBar></ToggleBar>
 
@@ -74,9 +75,9 @@ export function ChartPieLabelList() {
             <ChartTooltip
               content={<ChartTooltipContent nameKey="visitors" hideLabel />}
             />
-            <Pie data={chartData} dataKey="visitors">
+            <Pie data={transformedData} dataKey="visitors">
               <LabelList
-                dataKey="browser"
+                dataKey="category"
                 className="fill-background"
                 stroke="none"
                 fontSize={12}

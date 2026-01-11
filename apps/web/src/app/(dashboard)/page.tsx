@@ -9,6 +9,7 @@ import { ChartPieLabelList } from "@/components/ui/pie-chart"
 import { ChartBarStacked } from "@/components/ui/stacked-bar-chart"
 import { ChartBarHorizontal } from "@/components/ui/ChartBarHorizontal";
 import { BigNumber } from "@/components/ui/kpi"
+import AnalyticsSummary from "@/components/analytics-summary";
 
 export default async function Page() {
   const supabase = await createClient();
@@ -32,48 +33,9 @@ export default async function Page() {
         </div>
 
         <div className="items-center">
-
-        
-        <div className="flex flex-col w-full gap-20 ">
-           <div className="flex w-full gap-20">
-              <div className="flex-1">
-                <BigNumber />
-              </div>
-              <div className="flex-1">
-                <BigNumber />
-              </div>
-            </div>
-
-            <div className="flex w-full gap-20">
-              <div className="flex-1">
-                <BigNumber />
-              </div>
-              <div className="flex-1">
-                <BigNumber />
-              </div>
-            </div>
-        
-          <div className="w-full">
-            <ChartLineMultiple></ChartLineMultiple>
-          </div>
-          
-          <div className="w-full flex justify-center">
-          <div className="flex gap-8 w-full ">
-            <div className="flex-[1] h-full">
-              <ChartPieLabelList />
-            </div>
-            <div className="flex-[2] h-full">
-              <ChartBarStacked />
-            </div>
-          </div>
+          {/* Replace static components with dynamic AnalyticsSummary */}
+          <AnalyticsSummary />
         </div>
-
-          <div className="w-full">
-            <ChartBarHorizontal>
-            </ChartBarHorizontal>
-          </div>
-        </div>
-      </div>
       </div>
     
       {user ? (

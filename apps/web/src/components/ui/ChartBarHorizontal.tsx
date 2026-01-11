@@ -20,15 +20,6 @@ import {
 
 export const description = "A horizontal bar chart"
 
-const chartData = [
-  { month: "January", desktop: 186 },
-  { month: "February", desktop: 305 },
-  { month: "March", desktop: 237 },
-  { month: "April", desktop: 73 },
-  { month: "May", desktop: 209 },
-  { month: "June", desktop: 214 },
-]
-
 const chartConfig = {
   desktop: {
     label: "Desktop",
@@ -36,12 +27,38 @@ const chartConfig = {
   },
 } satisfies ChartConfig
 
-export function ChartBarHorizontal() {
+interface ChartBarHorizontalProps {
+  data?: Array<{
+    bucket: string;
+    people: number;
+  }>;
+  title?: string;
+  description?: string;
+}
+
+export function ChartBarHorizontal({ 
+  data,
+  title = "Bar Chart - Horizontal",
+  description = "January - June 2024"
+}: ChartBarHorizontalProps) {
+  // Transform data or use fallback
+  const chartData = data ? data.map(item => ({
+    month: item.bucket,
+    desktop: item.people
+  })) : [
+    { month: "January", desktop: 186 },
+    { month: "February", desktop: 305 },
+    { month: "March", desktop: 237 },
+    { month: "April", desktop: 73 },
+    { month: "May", desktop: 209 },
+    { month: "June", desktop: 214 },
+  ];
+
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Bar Chart - Horizontal</CardTitle>
-        <CardDescription>January - June 2024</CardDescription>
+        <CardTitle>{title}</CardTitle>
+        <CardDescription>{description}</CardDescription>
       </CardHeader>
       <CardContent>
         <ChartContainer config={chartConfig}>
