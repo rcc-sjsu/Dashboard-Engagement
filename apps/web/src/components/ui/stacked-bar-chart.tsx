@@ -24,19 +24,18 @@ export const description = "A stacked bar chart with a legend"
 
 interface ChartBarStackedProps {
   data?: Array<{
-    category: string;
-    value: number;
-  }>;
-  title?: string;
-  description?: string;
+    category: string
+    value: number
+  }>
+  title?: string
+  description?: string
 }
 
-export function ChartBarStacked({ 
+export function ChartBarStacked({
   data,
-  title = "Bar Chart - Stacked + Legend",
-  description = "January - June 2024"
+  title = "Members by Class Year",
+  description = "January - June 2024",
 }: ChartBarStackedProps) {
-  // Transform data for simple bar chart (not stacked since we only have one value per category)
   const chartData = data || [
     { month: "January", desktop: 186, mobile: 80 },
     { month: "February", desktop: 305, mobile: 200 },
@@ -44,27 +43,24 @@ export function ChartBarStacked({
     { month: "April", desktop: 73, mobile: 190 },
     { month: "May", desktop: 209, mobile: 130 },
     { month: "June", desktop: 214, mobile: 140 },
-  ];
+  ]
 
   const chartConfig = {
-    desktop: {
-      label: "Desktop",
-      color: "var(--chart-1)",
-    },
-    mobile: {
-      label: "Mobile",
-      color: "var(--chart-2)",
-    },
+    desktop: { label: "Desktop", color: "var(--chart-1)" },
+    mobile: { label: "Mobile", color: "var(--chart-2)" },
   } satisfies ChartConfig
 
   return (
-    <Card>
+    <Card className="flex flex-col h-full">
       <CardHeader>
         <CardTitle>{title}</CardTitle>
         <CardDescription>{description}</CardDescription>
       </CardHeader>
-      <CardContent>
-        <ChartContainer config={chartConfig}>
+
+      {/* Make content take remaining height */}
+      <CardContent className="flex-1">
+        {/* Give the chart a real height so it matches the pie */}
+<ChartContainer config={chartConfig} className="h-full w-full">
           <BarChart accessibilityLayer data={chartData}>
             <CartesianGrid vertical={false} />
             <XAxis
@@ -72,16 +68,18 @@ export function ChartBarStacked({
               tickLine={false}
               tickMargin={10}
               axisLine={false}
-              tickFormatter={(value) => value.slice(0, 3)}
+              tickFormatter={(value) => String(value).slice(0, 3)}
             />
             <ChartTooltip content={<ChartTooltipContent hideLabel />} />
             <ChartLegend content={<ChartLegendContent />} />
+
             <Bar
               dataKey={data ? "value" : "desktop"}
               stackId="a"
               fill="var(--color-desktop)"
-              radius={[0, 0, 4, 4]}
+              radius={[4, 4, 0, 0]}
             />
+
             {!data && (
               <Bar
                 dataKey="mobile"
@@ -93,6 +91,7 @@ export function ChartBarStacked({
           </BarChart>
         </ChartContainer>
       </CardContent>
+
       <CardFooter className="flex-col items-start gap-2 text-sm">
         <div className="flex gap-2 leading-none font-medium">
           Trending up by 5.2% this month <TrendingUp className="h-4 w-4" />

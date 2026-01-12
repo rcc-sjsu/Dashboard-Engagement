@@ -177,24 +177,26 @@ export default function AnalyticsSummary() {
       </div>
       
       {/* Pie Chart and Stacked Bar Chart */}
-      <div className="w-full flex justify-center">
-        <div className="flex gap-8 w-full">
-          <div className="flex-[1] h-full">
-            <ChartPieLabelList 
-              data={pieChartData}
-              title="Members by Major Category"
-              description={dateRange}
-            />
-          </div>
-          <div className="flex-[2] h-full">
-            <ChartBarStacked 
-              data={stackedBarData}
-              title="Members by Class Year"
-              description={dateRange}
-            />
-          </div>
-        </div>
-      </div>
+      <div className="w-full">
+  <div className="flex w-full flex-col gap-8 lg:flex-row lg:items-stretch">
+    <div className="min-w-0 lg:flex-[1]">
+      <ChartPieLabelList
+        data={pieChartData}
+        title="Members by Major Category"
+        description={dateRange}
+      />
+    </div>
+
+    <div className="min-w-0 lg:flex-[2]">
+      <ChartBarStacked
+        data={stackedBarData}
+        title="Members by Class Year"
+        description={dateRange}
+      />
+    </div>
+  </div>
+</div>
+
 
       {/* Horizontal Bar Chart - Attendance Distribution */}
       <div className="w-full">
