@@ -71,11 +71,12 @@ export function ChartBarHorizontal({
         {/* Chart */}
         <ChartContainer config={chartConfig} className="w-full min-h-[260px]">
           <BarChart
-            accessibilityLayer
-            data={chartData}
-            layout="vertical"
-            margin={{ left: 16, right: 16 }}
-          >
+  accessibilityLayer
+  data={chartData}
+  layout="vertical"
+  margin={{ left: -10, right: 16 }}
+>
+
             <XAxis type="number" dataKey="people" hide />
             <YAxis
               dataKey="bucket"
@@ -85,7 +86,16 @@ export function ChartBarHorizontal({
               axisLine={false}
               tickFormatter={formatBucket}
             />
-            <ChartTooltip cursor={false} content={<ChartTooltipContent hideLabel />} />
+            <ChartTooltip
+  cursor={false}
+  content={
+    <ChartTooltipContent
+      labelKey="bucket"
+      nameKey="people"
+    />
+  }
+/>
+
 
             <Bar dataKey="people" radius={6}>
               {chartData.map((entry, index) => (
