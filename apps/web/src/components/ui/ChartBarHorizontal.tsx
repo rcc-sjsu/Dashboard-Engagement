@@ -1,13 +1,11 @@
 "use client"
 
-import { TrendingUp } from "lucide-react"
-import { Bar, BarChart, XAxis, YAxis } from "recharts"
+import { Bar, BarChart, XAxis, YAxis, Cell } from "recharts"
 
 import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
@@ -18,83 +16,112 @@ import {
   type ChartConfig,
 } from "@/components/ui/chart"
 
-export const description = "A horizontal bar chart"
+export const description = "A horizontal bar chart with legend + fixed colors"
+
+interface ChartBarHorizontalProps {
+  data?: Array<{
+    bucket: string
+    people: number
+  }>
+  title?: string
+  description?: string
+}
+
+// blue, green, red, orange, purple (matches your request)
+const BAR_COLORS = [
+  "#3B82F6", // blue
+  "#22C55E", // green
+  "#EF4444", // red
+  "#F97316", // orange
+  "#A855F7", // purple
+]
 
 const chartConfig = {
-  desktop: {
-    label: "Desktop",
+  people: {
+    label: "People",
     color: "var(--chart-1)",
   },
 } satisfies ChartConfig
 
-interface ChartBarHorizontalProps {
-  data?: Array<{
-    bucket: string;
-    people: number;
-  }>;
-  title?: string;
-  description?: string;
-}
-
-export function ChartBarHorizontal({ 
+export function ChartBarHorizontal({
   data,
-  title = "Bar Chart - Horizontal",
-  description = "January - June 2024"
+  title = "Event Attendance Distribution",
+  description = "Overall attendance patterns",
 }: ChartBarHorizontalProps) {
-  // Transform data or use fallback
-  const chartData = data ? data.map(item => ({
-    month: item.bucket,
-    desktop: item.people
-  })) : [
-    { month: "January", desktop: 186 },
-    { month: "February", desktop: 305 },
-    { month: "March", desktop: 237 },
-    { month: "April", desktop: 73 },
-    { month: "May", desktop: 209 },
-    { month: "June", desktop: 214 },
-  ];
+  // Expecting data like: [{ bucket: "0", people: 148 }, ...]
+  const chartData = (data ?? []).map((item, index) => ({
+    bucket: item.bucket,
+    people: item.people,
+    fill: BAR_COLORS[index % BAR_COLORS.length],
+  }))
+
+  const total = chartData.reduce((sum, d) => sum + d.people, 0)
+
+  // For Y-axis labels: "0" -> "0", "4+" -> "4+"
+  const formatBucket = (value: string) => String(value)
 
   return (
-    <Card>
+    <Card className="flex flex-col h-full">
       <CardHeader>
         <CardTitle>{title}</CardTitle>
         <CardDescription>{description}</CardDescription>
       </CardHeader>
-      <CardContent>
-        <ChartContainer config={chartConfig}>
+
+      <CardContent className="flex flex-col gap-6 flex-1">
+        {/* Chart */}
+        <ChartContainer config={chartConfig} className="w-full min-h-[260px]">
           <BarChart
             accessibilityLayer
             data={chartData}
             layout="vertical"
-            margin={{
-              left: -20,
-            }}
+            margin={{ left: 16, right: 16 }}
           >
-            <XAxis type="number" dataKey="desktop" hide />
+            <XAxis type="number" dataKey="people" hide />
             <YAxis
-              dataKey="month"
+              dataKey="bucket"
               type="category"
               tickLine={false}
               tickMargin={10}
               axisLine={false}
-              tickFormatter={(value) => value.slice(0, 3)}
+              tickFormatter={formatBucket}
             />
-            <ChartTooltip
-              cursor={false}
-              content={<ChartTooltipContent hideLabel />}
-            />
-            <Bar dataKey="desktop" fill="var(--color-desktop)" radius={5} />
+            <ChartTooltip cursor={false} content={<ChartTooltipContent hideLabel />} />
+
+            <Bar dataKey="people" radius={6}>
+              {chartData.map((entry, index) => (
+                <Cell key={`cell-${index}`} fill={entry.fill} />
+              ))}
+            </Bar>
           </BarChart>
         </ChartContainer>
+
+        {/* Legend (replaces footer) */}
+        <div className="w-full space-y-2 text-sm">
+          {chartData.map((item) => {
+            const pct = total ? ((item.people / total) * 100).toFixed(1) : "0.0"
+            return (
+              <div
+                key={item.bucket}
+                className="flex items-center justify-between gap-4"
+              >
+                <div className="flex items-center gap-2 min-w-0">
+                  <span
+                    className="h-3 w-3 rounded-sm shrink-0"
+                    style={{ backgroundColor: item.fill }}
+                  />
+                  <span className="font-medium truncate">
+                    {item.bucket} attendee(s)
+                  </span>
+                </div>
+
+                <div className="text-muted-foreground shrink-0">
+                  {item.people} ({pct}%)
+                </div>
+              </div>
+            )
+          })}
+        </div>
       </CardContent>
-      <CardFooter className="flex-col items-start gap-2 text-sm">
-        <div className="flex gap-2 leading-none font-medium">
-          Trending up by 5.2% this month <TrendingUp className="h-4 w-4" />
-        </div>
-        <div className="text-muted-foreground leading-none">
-          Showing total visitors for the last 6 months
-        </div>
-      </CardFooter>
     </Card>
   )
 }

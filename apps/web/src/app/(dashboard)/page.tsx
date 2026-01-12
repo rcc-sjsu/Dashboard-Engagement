@@ -33,7 +33,7 @@ export default async function Page() {
         </div>
 
         <div className="items-center">
-          {/* Replace static components with dynamic AnalyticsSummary */}
+          {/* Replace ui code with dynamic call to analytics-summary.tsx */}
           <AnalyticsSummary />
         </div>
       </div>

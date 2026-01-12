@@ -20,37 +20,42 @@ import {
 
 export const description = "A multiple line chart"
 
+// SAME COLORS AS PIE / BAR
+const LINE_COLORS = {
+  registered: "#3B82F6", // blue
+  active: "#22C55E",     // green
+}
+
 const chartConfig = {
   registered: {
     label: "Registered",
-    color: "var(--chart-1)",
+    color: LINE_COLORS.registered,
   },
   active: {
     label: "Active",
-    color: "var(--chart-2)",
+    color: LINE_COLORS.active,
   },
 } satisfies ChartConfig
 
 interface ChartLineMultipleProps {
   data?: Array<{
-    month: string;
-    registered: number;
-    active: number;
-  }>;
-  title?: string;
-  description?: string;
-  trend?: string;
-  showTrend?: boolean;
+    month: string
+    registered: number
+    active: number
+  }>
+  title?: string
+  description?: string
+  trend?: string
+  showTrend?: boolean
 }
 
-export function ChartLineMultiple({ 
+export function ChartLineMultiple({
   data,
   title = "Line Chart - Multiple",
   description = "January - June 2024",
   trend,
-  showTrend = false
+  showTrend = false,
 }: ChartLineMultipleProps) {
-  // Fallback to mock data if no data provided
   const chartData = data || [
     { month: "January", registered: 186, active: 80 },
     { month: "February", registered: 305, active: 200 },
@@ -58,39 +63,36 @@ export function ChartLineMultiple({
     { month: "April", registered: 73, active: 190 },
     { month: "May", registered: 209, active: 130 },
     { month: "June", registered: 214, active: 140 },
-  ];
+  ]
 
-  // Format period like "2025-09" to "Sep"
   const formatPeriod = (period: string) => {
-    if (!period) return '';
-    
-    // Check if it's in YYYY-MM format
-    if (period.includes('-')) {
-      const [year, month] = period.split('-');
-      const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
-                          'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-      return monthNames[parseInt(month) - 1] || period;
+    if (!period) return ""
+
+    if (period.includes("-")) {
+      const [, month] = period.split("-")
+      const monthNames = [
+        "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+        "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+      ]
+      return monthNames[parseInt(month) - 1] || period
     }
-    
-    // Otherwise just take first 3 chars
-    return period.slice(0, 3);
-  };
+
+    return period.slice(0, 3)
+  }
 
   return (
-    <Card>
+    <Card className="flex flex-col h-full">
       <CardHeader>
         <CardTitle>{title}</CardTitle>
         <CardDescription>{description}</CardDescription>
       </CardHeader>
-      <CardContent>
-        <ChartContainer config={chartConfig}>
+
+      <CardContent className="flex-1">
+        <ChartContainer config={chartConfig} className="h-full">
           <LineChart
             accessibilityLayer
             data={chartData}
-            margin={{
-              left: 12,
-              right: 12,
-            }}
+            margin={{ left: 12, right: 12 }}
           >
             <CartesianGrid vertical={false} />
             <XAxis
@@ -101,41 +103,39 @@ export function ChartLineMultiple({
               tickFormatter={formatPeriod}
             />
             <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
-            <Legend /> 
+            <Legend />
+
             <Line
               dataKey="registered"
               type="monotone"
-              name={chartConfig.registered.label} 
-              stroke={chartConfig.registered.color}
-              strokeWidth={2}
+              name={chartConfig.registered.label}
+              stroke={LINE_COLORS.registered}
+              strokeWidth={2.5}
               dot={false}
             />
+
             <Line
               dataKey="active"
               type="monotone"
-              name={chartConfig.active.label} 
-              stroke={chartConfig.active.color}
-              strokeWidth={2}
+              name={chartConfig.active.label}
+              stroke={LINE_COLORS.active}
+              strokeWidth={2.5}
               dot={false}
             />
           </LineChart>
         </ChartContainer>
       </CardContent>
-      {showTrend && trend && (
+
+      {showTrend && trend ? (
         <CardFooter>
           <div className="flex w-full items-start gap-2 text-sm">
-            <div className="grid gap-2">
-              <div className="flex items-center gap-2 leading-none font-medium">
-                {trend} <TrendingUp className="h-4 w-4" />
-              </div>
+            <div className="flex items-center gap-2 leading-none font-medium">
+              {trend} <TrendingUp className="h-4 w-4" />
             </div>
           </div>
         </CardFooter>
-      )}
-      {!showTrend && (
-        <CardFooter>
-          <div className="h-4"></div>
-        </CardFooter>
+      ) : (
+        <CardFooter className="h-4" />
       )}
     </Card>
   )
