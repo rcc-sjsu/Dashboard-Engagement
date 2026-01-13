@@ -16,12 +16,6 @@ export function SiteHeader() {
           className="mx-3 self-center data-[orientation=vertical]:h-6 my-auto data-[orientation=vertical]:w-px"
         />
         <h1 className="text-base font-semibold tracking-tight">RCC Dashboard</h1>
-        <div className="ml-auto flex items-center gap-2">
-          <Button variant="secondary" size='sm' className="text-sm font-medium min-w-8 duration-200 ease-linear" >
-          <HugeiconsIcon icon={AddCircleIcon} />
-            <span>Quick Upload</span>
-          </Button>
-        </div>
       </div>
     </header>
   )
