@@ -1,13 +1,9 @@
 from psycopg import Connection
+from psycopg.rows import dict_row
 
 BUCKETS = ["0", "1", "2", "3", "4+"]
 
 def _fill_buckets(rows):
-    """
-    rows: list of dicts like:
-      {"events_attended_bucket": "2", "people": 17}
-    returns all buckets with missing buckets filled with 0
-    """
     m = {r["events_attended_bucket"]: int(r["people"]) for r in rows}
     return [{"events_attended_bucket": b, "people": m.get(b, 0)} for b in BUCKETS]
 
@@ -17,54 +13,96 @@ def build_retention_payload(
     members_table: str = "public.members",
     attendance_table: str = "public.event_attendance",
     members_email_col: str = "email",
-    attendance_member_email_col: str = "member_email",   # <-- IMPORTANT
+    members_major_category_col: str = "major_category",
+    attendee_email_col: str = "attendee_email",
+    attendee_major_category_col: str = "attendee_major_category",
     event_id_col: str = "event_id",
-    major_category_col: str = "major_category",
 ):
-    # Overall distribution (members only)
     overall_sql = f"""
-    WITH per_member AS (
+    WITH people AS (
       SELECT
-        m.{members_email_col} AS email,
-        COUNT(DISTINCT a.{event_id_col}) AS events_attended
+        LOWER(TRIM(m.{members_email_col})) AS email,
+        COALESCE(NULLIF(m.{members_major_category_col}, ''), 'Unknown') AS major_category
       FROM {members_table} m
-      LEFT JOIN {attendance_table} a
-        ON a.{attendance_member_email_col} = m.{members_email_col}
-      GROUP BY m.{members_email_col}
+      WHERE m.{members_email_col} IS NOT NULL
+
+      UNION
+
+      SELECT
+        LOWER(TRIM(a.{attendee_email_col})) AS email,
+        COALESCE(NULLIF(a.{attendee_major_category_col}, ''), 'Unknown') AS major_category
+      FROM {attendance_table} a
+      WHERE a.{attendee_email_col} IS NOT NULL
+    ),
+    attendance_counts AS (
+      SELECT
+        LOWER(TRIM(a.{attendee_email_col})) AS email,
+        COUNT(DISTINCT a.{event_id_col}) AS events_attended
+      FROM {attendance_table} a
+      WHERE a.{attendee_email_col} IS NOT NULL
+      GROUP BY 1
+    ),
+    per_person AS (
+      SELECT
+        p.email,
+        COALESCE(ac.events_attended, 0) AS events_attended
+      FROM people p
+      LEFT JOIN attendance_counts ac
+        ON ac.email = p.email
     )
     SELECT
       CASE WHEN events_attended >= 4 THEN '4+' ELSE events_attended::text END AS events_attended_bucket,
       COUNT(*)::int AS people
-    FROM per_member
+    FROM per_person
     GROUP BY 1;
     """
 
-    # Distribution by major_category (members only)
     by_major_sql = f"""
-    WITH per_member AS (
+    WITH people AS (
       SELECT
-        m.{members_email_col} AS email,
-        COALESCE(m.{major_category_col}, 'Unknown') AS major_category,
-        COUNT(DISTINCT a.{event_id_col}) AS events_attended
+        LOWER(TRIM(m.{members_email_col})) AS email,
+        COALESCE(NULLIF(m.{members_major_category_col}, ''), 'Unknown') AS major_category
       FROM {members_table} m
-      LEFT JOIN {attendance_table} a
-        ON a.{attendance_member_email_col} = m.{members_email_col}
-      GROUP BY m.{members_email_col}, m.{major_category_col}
+      WHERE m.{members_email_col} IS NOT NULL
+
+      UNION
+
+      SELECT
+        LOWER(TRIM(a.{attendee_email_col})) AS email,
+        COALESCE(NULLIF(a.{attendee_major_category_col}, ''), 'Unknown') AS major_category
+      FROM {attendance_table} a
+      WHERE a.{attendee_email_col} IS NOT NULL
+    ),
+    attendance_counts AS (
+      SELECT
+        LOWER(TRIM(a.{attendee_email_col})) AS email,
+        COUNT(DISTINCT a.{event_id_col}) AS events_attended
+      FROM {attendance_table} a
+      WHERE a.{attendee_email_col} IS NOT NULL
+      GROUP BY 1
+    ),
+    per_person AS (
+      SELECT
+        p.email,
+        p.major_category,
+        COALESCE(ac.events_attended, 0) AS events_attended
+      FROM people p
+      LEFT JOIN attendance_counts ac
+        ON ac.email = p.email
     )
     SELECT
       major_category,
       CASE WHEN events_attended >= 4 THEN '4+' ELSE events_attended::text END AS events_attended_bucket,
       COUNT(*)::int AS people
-    FROM per_member
+    FROM per_person
     GROUP BY major_category, events_attended_bucket;
     """
 
-    with conn.cursor() as cur:
+    with conn.cursor(row_factory=dict_row) as cur:
         cur.execute(overall_sql)
-        overall_rows = cur.fetchall()  # list[dict]
-
+        overall_rows = cur.fetchall()
         cur.execute(by_major_sql)
-        by_major_rows = cur.fetchall()  # list[dict]
+        by_major_rows = cur.fetchall()
 
     overall = _fill_buckets(overall_rows)
 
@@ -75,8 +113,8 @@ def build_retention_payload(
         )
 
     by_major = [
-        {"major_category": major_category, "distribution": _fill_buckets(rows)}
-        for major_category, rows in grouped.items()
+        {"major_category": k, "distribution": _fill_buckets(v)}
+        for k, v in grouped.items()
     ]
 
     return {
