@@ -23,3 +23,6 @@ def health():
 
 
 app.include_router(analytics_router)
+
+
+#master (universal) endpoint goes here

@@ -20,3 +20,16 @@ def overview():
             return build_overview_payload(conn)
     except Exception as e:
         return {"detail": str(e)}
+
+
+#Aggregation of the two endpoints
+@router.get("/") #prefix is already "/analytics", so "/" makes the final URL just "/analytics"
+def analytics():
+    try:
+        with get_conn() as conn:
+            return {"overview": build_overview_payload(conn),
+                   "retention": build_retention_payload(conn)
+                    }
+            
+    except Exception as e:
+        return {"detail": str(e)}
