@@ -66,7 +66,7 @@ export function EventForm( { value, onChange }: EventFormProps) {
     });
 
     console.log("EventForm pushed data to parent:", data);
-  }
+  };
 
   return (
     <div className="flex justify-center items-start mt-12">

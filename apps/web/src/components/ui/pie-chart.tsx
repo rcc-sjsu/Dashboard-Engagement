@@ -2,8 +2,12 @@
 
 import { TrendingUp } from "lucide-react"
 import { ResponsiveContainer, LabelList, Pie, PieChart } from "recharts"
+import  ToggleBar  from "@/components/ui/toggle-bar"
+import { PieChartYear } from  "@/components/ui/pie-chart-year"
+import { PieChartMajor } from  "@/components/ui/pie-chart-major"
+import { useState } from 'react'
 
-import {
+import { 
   Card,
   CardContent,
   CardDescription,
@@ -17,78 +21,69 @@ import {
   ChartTooltipContent,
   type ChartConfig,
 } from "@/components/ui/chart"
-// ?Where does this ToggleBar come from? there is nothing like this in components/ui/toggle.tsx @codebyemily
-// import { ToggleBar } from "@/components/ui/toggle"
 
 export const description = "A pie chart with a label list"
 
 const chartData = [
-  { browser: "chrome", visitors: 275, fill: "var(--color-chrome)" },
-  { browser: "safari", visitors: 200, fill: "var(--color-safari)" },
-  { browser: "firefox", visitors: 187, fill: "var(--color-firefox)" },
-  { browser: "edge", visitors: 173, fill: "var(--color-edge)" },
-  { browser: "other", visitors: 90, fill: "var(--color-other)" },
+  { browser: "Technical", visitors: 275, fill: "var(--color-chrome)" },
+  { browser: "Business", visitors: 200, fill: "var(--color-safari)" },
+  { browser: "Humanities & Arts", visitors: 187, fill: "var(--color-firefox)" },
+  { browser: "Other/Unknown", visitors: 173, fill: "var(--color-edge)" },
 ]
 
 const chartConfig = {
-  visitors: {
-    label: "Visitors",
-  },
   chrome: {
-    label: "Chrome",
+    label: "TECH",
     color: "var(--chart-1)",
   },
   safari: {
-    label: "Safari",
+    label: "BUS",
     color: "var(--chart-2)",
   },
   firefox: {
-    label: "Firefox",
+    label: "H&A",
     color: "var(--chart-3)",
   },
   edge: {
-    label: "Edge",
+    label: "O/U",
     color: "var(--chart-4)",
   },
-  other: {
-    label: "Other",
-    color: "var(--chart-5)",
-  },
+  
 } satisfies ChartConfig
 
 export function ChartPieLabelList() {
+  const [majorChart, setMajorChart] = useState(true)
+
   return (
     <ResponsiveContainer width="100%" height="100%">
     <Card className="flex flex-col h-full justify-between">
-      <CardHeader className="items-center pb-0">
+      <div>
+        <CardHeader className="items-center pb-0">
         <CardTitle>Pie Chart - Label List</CardTitle>
         <CardDescription>January - June 2024</CardDescription>
       </CardHeader>
-      {/* <ToggleBar></ToggleBar> */}
-
-      <CardContent className="flex flex-1 pt-4">
-        <ChartContainer
-          config={chartConfig}
-          className="[&_.recharts-text]:fill-background mx-auto aspect-square max-h-[250px]"
-        >
-          <PieChart>
-            <ChartTooltip
-              content={<ChartTooltipContent nameKey="visitors" hideLabel />}
-            />
-            <Pie data={chartData} dataKey="visitors">
-              <LabelList
-                dataKey="browser"
-                className="fill-background"
-                stroke="none"
-                fontSize={12}
-                formatter={(value: keyof typeof chartConfig) =>
-                  chartConfig[value]?.label
-                }
-              />
-            </Pie>
-          </PieChart>
-        </ChartContainer>
-      </CardContent>
+      </div>
+        
+        <div className="flex justify-center">
+        <ToggleBar
+          options={[
+            { label: 'Major', value: 'major' },
+            { label: 'Year', value: 'year' },
+          ]}
+            onChange={(v) => {
+                      if (v ==='major'){
+                        setMajorChart(true)
+                      } else {
+                        setMajorChart(false)
+                      }
+                     }
+                    }        />
+      </div>
+       {majorChart 
+          ? <PieChartMajor></PieChartMajor>
+          : <PieChartYear></PieChartYear> 
+          }
+      
       <CardFooter className="flex-col gap-2 text-sm">
         <div className="flex items-center gap-2 leading-none font-medium">
           Trending up by 5.2% this month <TrendingUp className="h-4 w-4" />
