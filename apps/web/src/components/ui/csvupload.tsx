@@ -1,20 +1,26 @@
 'use client';
 import { Dropzone, DropzoneContent, DropzoneEmptyState } from '@/components/ui/shadcn-io/dropzone';
+import { cn } from '@/lib/utils';
 import { UploadIcon } from 'lucide-react';
 import { useState } from 'react';
-import { cn } from '@/lib/utils';
 
 type UploadAreaProps = {
-  variant?: 'default' | 'compact';
+  onFile: (file: File | null) => void;
   className?: string;
+  isCompact?: boolean;
 };
 
-const UploadArea = ({ variant = 'default', className }: UploadAreaProps) => {
+export default function UploadArea({ onFile, className, isCompact } : UploadAreaProps) {
   const [files, setFiles] = useState<File[] | undefined>();
-  const isCompact = variant === 'compact';
-  const handleDrop = (files: File[]) => {
-    console.log(files);
-    setFiles(files);
+  const handleDrop = (droppedFiles: File[]) => {
+    if (droppedFiles.length > 1) {
+      alert("Please upload only ONE CSV file");
+    }
+    console.log(droppedFiles);
+
+    const firstFile = droppedFiles?.[0] ?? null;
+    setFiles(firstFile ? [firstFile] : undefined);
+    onFile(firstFile);
   };
   return (
     <Dropzone
@@ -45,7 +51,7 @@ const UploadArea = ({ variant = 'default', className }: UploadAreaProps) => {
               Upload a file
             </p>
             <p className="text-muted-foreground text-xs">
-              Drag and drop or click to upload
+              Drag and drop or click to upload (1 file only)
             </p>
           </div>
         </div>
@@ -54,4 +60,3 @@ const UploadArea = ({ variant = 'default', className }: UploadAreaProps) => {
     </Dropzone>
   );
 };
-export default UploadArea;

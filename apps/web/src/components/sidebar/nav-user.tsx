@@ -52,6 +52,7 @@ export function NavUser({
   const { isMobile } = useSidebar()
   const showFallbackIcon = !user.avatar
   const [profileOpen, setProfileOpen] = useState(false)
+  console.log("Rendering NavUser with user:", user)
 
   return (
     <SidebarMenu>
@@ -67,13 +68,7 @@ export function NavUser({
                   <AvatarImage src={user.avatar} alt={user.name} />
                 ) : null}
                 <AvatarFallback className="rounded-lg">
-                  {showFallbackIcon ? (
                     <User className="h-4 w-4" />
-                  ) : user.name != "User" ? (
-                    user.name.split(" ")[0][0] + user.name.split(" ")[1]?.[0]
-                  ) : (
-                    "OS"
-                  )}
                 </AvatarFallback>
               </Avatar>
               <div className="grid flex-1 text-left text-sm leading-tight">
@@ -84,7 +79,7 @@ export function NavUser({
             </SidebarMenuButton>
           </DropdownMenuTrigger>
           <DropdownMenuContent
-            className="w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg"
+            className="w-[var(--radix-dropdown-menu-trigger-width)] min-w-56 rounded-lg"
             side={isMobile ? "bottom" : "right"}
             align="end"
             sideOffset={4}
