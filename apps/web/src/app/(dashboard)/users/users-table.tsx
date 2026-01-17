@@ -395,90 +395,6 @@ export default function UsersTable({ data }: UsersTableProps) {
 
   return (
     <div className="w-full space-y-4">
-      <form
-        onSubmit={handleAddUser}
-        className="grid gap-3 rounded-md border bg-muted/30 p-4 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,150px)_minmax(0,1fr)_auto] sm:items-end"
-      >
-        <div className="grid gap-2">
-          <label
-            htmlFor="new-user-name"
-            className="text-xs font-medium text-muted-foreground"
-          >
-            Name
-          </label>
-          <Input
-            id="new-user-name"
-            placeholder="Jane Doe"
-            value={newUser.name}
-            onChange={(event) =>
-              setNewUser((prev) => ({ ...prev, name: event.target.value }))
-            }
-          />
-        </div>
-        <div className="grid gap-2">
-          <label
-            htmlFor="new-user-email"
-            className="text-xs font-medium text-muted-foreground"
-          >
-            Email
-          </label>
-          <Input
-            id="new-user-email"
-            type="email"
-            placeholder="jane@example.com"
-            value={newUser.email}
-            onChange={(event) =>
-              setNewUser((prev) => ({ ...prev, email: event.target.value }))
-            }
-          />
-        </div>
-        <div className="grid gap-2">
-          <span className="text-xs font-medium text-muted-foreground">Role</span>
-          <Select
-            value={newUser.role}
-            onValueChange={(value) =>
-              setNewUser((prev) => ({
-                ...prev,
-                role: value as NewUserFormState["role"],
-              }))
-            }
-          >
-            <SelectTrigger className="h-9">
-              <SelectValue placeholder="Select role" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectGroup>
-                <SelectLabel>Role</SelectLabel>
-                {ROLE_OPTIONS.map((option) => (
-                  <SelectItem key={option.value} value={option.value}>
-                    {option.label}
-                  </SelectItem>
-                ))}
-              </SelectGroup>
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="grid gap-2">
-          <label
-            htmlFor="new-user-avatar"
-            className="text-xs font-medium text-muted-foreground"
-          >
-            Avatar URL
-          </label>
-          <Input
-            id="new-user-avatar"
-            type="url"
-            placeholder="https://..."
-            value={newUser.avatar}
-            onChange={(event) =>
-              setNewUser((prev) => ({ ...prev, avatar: event.target.value }))
-            }
-          />
-        </div>
-        <Button type="submit" className="w-full sm:w-auto">
-          Add user
-        </Button>
-      </form>
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
         <Input
           placeholder="Filter emails..."
@@ -488,28 +404,118 @@ export default function UsersTable({ data }: UsersTableProps) {
           }
           className="w-full sm:max-w-sm"
         />
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="sm:ml-auto">
-              Columns <ChevronDown />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            {table
-              .getAllColumns()
-              .filter((column) => column.getCanHide())
-              .map((column) => (
-                <DropdownMenuCheckboxItem
-                  key={column.id}
-                  className="capitalize"
-                  checked={column.getIsVisible()}
-                  onCheckedChange={(value) => column.toggleVisibility(!!value)}
-                >
-                  {column.id}
-                </DropdownMenuCheckboxItem>
-              ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <div className="flex flex-col gap-2 sm:ml-auto sm:flex-row sm:items-center">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline">Columns <ChevronDown /></Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              {table
+                .getAllColumns()
+                .filter((column) => column.getCanHide())
+                .map((column) => (
+                  <DropdownMenuCheckboxItem
+                    key={column.id}
+                    className="capitalize"
+                    checked={column.getIsVisible()}
+                    onCheckedChange={(value) => column.toggleVisibility(!!value)}
+                  >
+                    {column.id}
+                  </DropdownMenuCheckboxItem>
+                ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+          <Dialog open={addDialogOpen} onOpenChange={handleAddDialogOpenChange}>
+            <DialogTrigger asChild>
+              <Button>Add user</Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Add user</DialogTitle>
+                <DialogDescription>
+                  Create a new user for the dashboard.
+                </DialogDescription>
+              </DialogHeader>
+              <form onSubmit={handleAddUser} className="grid gap-4">
+                <div className="grid gap-2">
+                  <label
+                    htmlFor="new-user-name"
+                    className="text-xs font-medium text-muted-foreground"
+                  >
+                    Name
+                  </label>
+                  <Input
+                    id="new-user-name"
+                    placeholder="Jane Doe"
+                    value={newUser.name}
+                    onChange={(event) =>
+                      setNewUser((prev) => ({
+                        ...prev,
+                        name: event.target.value,
+                      }))
+                    }
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <label
+                    htmlFor="new-user-email"
+                    className="text-xs font-medium text-muted-foreground"
+                  >
+                    Email
+                  </label>
+                  <Input
+                    id="new-user-email"
+                    type="email"
+                    placeholder="jane@example.com"
+                    value={newUser.email}
+                    onChange={(event) =>
+                      setNewUser((prev) => ({
+                        ...prev,
+                        email: event.target.value,
+                      }))
+                    }
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <span className="text-xs font-medium text-muted-foreground">
+                    Role
+                  </span>
+                  <Select
+                    value={newUser.role}
+                    onValueChange={(value) =>
+                      setNewUser((prev) => ({
+                        ...prev,
+                        role: value as NewUserFormState["role"],
+                      }))
+                    }
+                  >
+                    <SelectTrigger className="h-9">
+                      <SelectValue placeholder="Select role" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectGroup>
+                        <SelectLabel>Role</SelectLabel>
+                        {ROLE_OPTIONS.map((option) => (
+                          <SelectItem key={option.value} value={option.value}>
+                            {option.label}
+                          </SelectItem>
+                        ))}
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <DialogFooter>
+                  <DialogClose asChild>
+                    <Button type="button" variant="outline">
+                      Cancel
+                    </Button>
+                  </DialogClose>
+                  <Button type="submit">Add user</Button>
+                </DialogFooter>
+              </form>
+            </DialogContent>
+          </Dialog>
+        </div>
       </div>
       <div className="overflow-auto rounded-md border">
         <Table>
