@@ -52,7 +52,7 @@ export function ChartBarStacked() {
                   </CardHeader>
 
                   {/*Only the card content in retention-overall and retention-stacked will be updated will real data */}
-                    <RetentionStacked></RetentionStacked> 
+                    <RetentionStacked data={undefined}></RetentionStacked> 
                   <CardFooter className="flex-col items-start gap-2 text-sm">
                     
                   </CardFooter>
