@@ -34,12 +34,12 @@ export default function Page() {
     checkUser();
   }, [router, supabase]);
 
-  // Fetch ONLY retention data
+  // Fetch retention data
   useEffect(() => {
     const loadRetention = async () => {
       try {
         const data = await fetchAnalyticsData();
-        // Handle nested structure: data.retention.retention
+        
         const retention = data.retention?.retention || data.retention;
         setRetentionData(retention);
       } catch (err) {
@@ -99,7 +99,7 @@ export default function Page() {
           </div>
         </div>
 
-        {/* ONLY retention gets real data */}
+        {/* ONLY retention gets real data -pouya */}
         <RetentionDistributionChart data={retentionData} />
 
         </div>
