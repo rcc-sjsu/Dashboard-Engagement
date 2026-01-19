@@ -73,16 +73,16 @@ def build_mission_payload(
             COALESCE(
               NULLIF(
                 CASE
-                  WHEN m.major_category = 'Unknown/other' THEN 'Other/Unknown'
-                  ELSE m.major_category
+                    WHEN COALESCE(m.major_category, a.attendee_major_category) = 'Unknown/other' THEN 'Other/Unknown'
+                    ELSE COALESCE(m.major_category, a.attendee_major_category)
                 END,
                 ''
               ),
               'Other/Unknown'
             ) AS major_category,
-            COUNT(*)::int AS count
+            COUNT(DISTINCT a.attendee_email)::int AS count
         FROM {attendance_table} a
-        JOIN {members_table} m ON a.member_email = m.email
+        LEFT JOIN {members_table} m ON a.member_email = m.email
         WHERE a.event_id IN (SELECT event_id FROM event_attendance_counts)
         GROUP BY a.event_id, 2
     )
