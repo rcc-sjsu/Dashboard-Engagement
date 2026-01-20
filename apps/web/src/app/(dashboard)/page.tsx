@@ -29,6 +29,16 @@ export default async function Page() {
 
   const json = await res.json();
 
+  // Fetch mission analytics
+  const missionRes = await fetch(`${base}/analytics/mission`, { cache: "no-store" });
+
+  if (!missionRes.ok) {
+    throw new Error(`Mission fetch failed: ${res.status}`);
+  }
+
+  const missionJson = await missionRes.json();
+  const mission = missionJson?.mission ?? missionJson;
+
   // --- RETENTION (added; rest of file unchanged) ---
   const retentionRes = await fetch(`${base}/analytics/retention`, {
     cache: "no-store",
@@ -120,7 +130,7 @@ export default async function Page() {
           </div>
 
           <div className="min-w-0">
-            <MissionSection />
+            <MissionSection data={mission} />
           </div>
 
           {/* RETENTION */}

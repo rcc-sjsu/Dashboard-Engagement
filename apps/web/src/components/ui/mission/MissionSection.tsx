@@ -7,27 +7,6 @@ import { PieChartMajor } from "@/components/ui/mission/pie-chart-major";
 import { PieChartYear } from "@/components/ui/mission/pie-chart-year";
 import { MissionEventsStacked } from "@/components/ui/mission/MissionEventsStacked";
 
-// Matching mission.py output shape
-type MajorDistItem = { major_category: string; members: number };
-type YearDistItem = { class_year: string; members: number };
-
-type EventSegment = { major_category: string; pct: number; count: number };
-type EventMajorCategoryPercent = {
-    event_id: string;
-    event_title: string;
-    starts_at: string;
-    total_attendees: number;
-    segments: EventSegment[];
-};
-
-type MissionPayload = {
-    mission: {
-        major_category_distribution: MajorDistItem[];
-        class_year_distribution: YearDistItem[];
-        event_major_category_percent: EventMajorCategoryPercent[];
-    };
-};
-
 const MAJOR_ORDER = ["Technical", "Business", "Humanities & Arts", "Health Sciences", "Other/Unknown"] as const;
 const YEAR_ORDER = ["Freshman", "Sophomore", "Junior", "Senior", "Grad", "Other/Unknown", "4th+ year"] as const;
 
@@ -65,64 +44,46 @@ function Legend({ items }: { items: Record<string, { label: string; color: strin
     );
 }
 
+type MajorDistRow = {
+    major_category: string;
+    members: number;
+};
+
+type YearDistRow = {
+    class_year: string;
+    members: number; 
+};
+
+type MissionData = {
+    major_category_distribution: MajorDistRow[];
+    class_year_distribution: YearDistRow[];
+    event_major_category_percent: any[];
+};
+
 /**
  * MissionSection fetches /analytics/mission once and uses data for:
  * - Pie chart (Major vs Year toggle)
  * - Stacked event diversity chart
  */
-export function MissionSection() {
+export function MissionSection({ data }: { data: MissionData }) {
     // Major vs Year toggle
     const [showMajor, setShowMajor] = useState(true);
 
-    // Data loading
-    const [payload, setPayload] = useState<MissionPayload | null>(null);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
-
-    // Fetch mission payload once on mount
-    useEffect(() => {
-        async function loadMission() {
-            try {
-                setLoading(true);
-                setError(null);
-
-                const base = process.env.NEXT_PUBLIC_SERVER_URL;
-                if (!base) throw new Error("NEXT_PUBLIC_SERVER_URL is not set");
-
-                const res = await fetch(`${base}/analytics/mission`, { cache: "no-store" });
-                const text = await res.text();
-
-                if (!res.ok) {
-                throw new Error(text || `Mission fetch failed: ${res.status}`);
-                }
-
-                const json = JSON.parse(text);
-                setPayload(json);
-            } catch (e: any) {
-                setError(e?.message ?? "Failed to load mission data.");
-            } finally {
-                setLoading(false);
-            }
-        }
-
-        loadMission();
-    }, []);
-
     // Fill missing categories with 0 so charts/legends stay stable even if a category is absent
     const majorDist = useMemo(() => {
-        const dist = payload?.mission.major_category_distribution ?? [];
+        const dist = data?.major_category_distribution ?? [];
         // order + fill missing to 0
         const map = new Map(dist.map((d) => [d.major_category, d.members]));
         return MAJOR_ORDER.map((k) => ({ major_category: k, members: map.get(k) ?? 0 }));
-    }, [payload]);
+    }, [data]);
     
     const yearDist = useMemo(() => {
-        const dist = payload?.mission.class_year_distribution ?? [];
+        const dist = data?.class_year_distribution ?? [];
         const map = new Map(dist.map((d) => [d.class_year, d.members]));
         return YEAR_ORDER.map((k) => ({ class_year: k, members: map.get(k) ?? 0 }));
-    }, [payload]);
+    }, [data]);
 
-    const events = payload?.mission.event_major_category_percent ?? [];
+    const events = data?.event_major_category_percent ?? [];
 
     return (
         <section className="w-full flex flex-col gap-8">
@@ -152,15 +113,10 @@ export function MissionSection() {
                 </div>
 
                 <CardContent className="flex-1 min-h-0">
-                    {loading && <div className="text-sm text-muted-foreground">Loading mission…</div>}
-                    {error && <div className="text-sm text-red-600">{error}</div>}
-                    
-                    {!loading && !error && (
-                        showMajor ? (
-                            <PieChartMajor data={majorDist} />
-                        ) : (
-                            <PieChartYear data={yearDist} />
-                        )
+                    {showMajor ? (
+                        <PieChartMajor data={majorDist} />
+                    ) : (
+                        <PieChartYear data={yearDist} />
                     )}
                 </CardContent>
 
@@ -173,8 +129,6 @@ export function MissionSection() {
         {/* RIGHT: Events stacked bar */}
         <div className="flex-2">
           <MissionEventsStacked
-            loading={loading}
-            error={error}
             events={events}
             majorOrder={[...MAJOR_ORDER]}
           />
