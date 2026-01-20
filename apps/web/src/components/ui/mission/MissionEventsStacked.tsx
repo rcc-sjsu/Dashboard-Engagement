@@ -28,8 +28,6 @@ type EventMajorCategoryPercent = {
 };
 
 type Props = {
-    loading: boolean;
-    error: string | null;
     events: EventMajorCategoryPercent[];
     majorOrder: string[]
 };
@@ -38,7 +36,7 @@ type Props = {
  * Stacked bar chart: each bar = event, each segment = major category
  * Uses `count` (not %) so the stacked height equals total categorized attendees
  */
-export function MissionEventsStacked( { loading, error, events, majorOrder }: Props ) {
+export function MissionEventsStacked( { events, majorOrder }: Props ) {
     // one object per event with keys for each major category
     const data = useMemo(() => {
         return events
@@ -80,10 +78,6 @@ export function MissionEventsStacked( { loading, error, events, majorOrder }: Pr
             </CardHeader>
     
             <CardContent>
-                {loading && <div className="text-sm text-muted-foreground">Loading mission…</div>}
-                {error && <div className="text-sm text-red-600">{error}</div>}
-    
-                {!loading && !error && (
                     <ChartContainer config={chartConfig}>
                         <BarChart accessibilityLayer data={data} >
                             <CartesianGrid vertical={false} />
@@ -117,7 +111,6 @@ export function MissionEventsStacked( { loading, error, events, majorOrder }: Pr
                             })}
                         </BarChart>
                     </ChartContainer>
-                )}
             </CardContent>
         </Card>
     );
