@@ -29,6 +29,7 @@ import {
 import { cn } from "@/lib/utils";
 import confetti from "canvas-confetti";
 
+// Data captured in the event setup step before the CSV is uploaded.
 export type EventFormData = {
   title: string;
   startsAt: string;
@@ -72,15 +73,15 @@ const steps: Array<{ id: ImportStep; title: string; description: string }> = [
   },
 ];
 
-const getMissingFields = (file: File | null, data: EventFormData) => {
-  const missing: string[] = [];
-  if (!data.title) missing.push("event title");
-  if (!data.startsAt) missing.push("event start time");
-  if (!data.eventKind) missing.push("event kind");
-  if (!file) missing.push("CSV file");
-  return missing;
-};
+const getMissingFields = (file: File | null, data: EventFormData) =>
+  [
+    !data.title && "event title",
+    !data.startsAt && "event start time",
+    !data.eventKind && "event kind",
+    !file && "CSV file",
+  ].filter(Boolean) as string[];
 
+// Acceptable variants of the email column header in uploaded CSVs.
 const EMAIL_HEADER_ALIASES = [
   "sjsu email",
   "email address",
@@ -89,12 +90,14 @@ const EMAIL_HEADER_ALIASES = [
   "sjsu email address",
 ];
 
+// Normalize to compare duplicates reliably.
 const normalizeEmail = (email: string) =>
   (email || "").trim().toLowerCase().replace(/\s+/g, "");
 
 const isValidEmail = (value: string) =>
   /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
 
+// Locate a header using loose alias matching (case-insensitive, partial match).
 const findHeader = (headers: string[], aliases: string[]) => {
   const normalizedHeaders = headers.map((header) => ({
     original: header,
@@ -120,14 +123,15 @@ type DuplicateGroup = {
 };
 
 export default function AdminImportPanel() {
+  // UI stepper state and inputs.
   const [step, setStep] = useState<ImportStep>(1);
   const [hasImported, setHasImported] = useState(false);
-  const [importType, setImportType] = useState<ImportType>(
-    "Event Attendance"
-  );
+  const [importType, setImportType] =
+    useState<ImportType>("Event Attendance");
   const [file, setFile] = useState<File | null>(null);
   const [formKey, setFormKey] = useState(0);
   const [eventData, setEventData] = useState<EventFormData>(EMPTY_EVENT);
+  // CSV preview parsing and validation state.
   const [previewHeaders, setPreviewHeaders] = useState<string[]>([]);
   const [previewRows, setPreviewRows] = useState<
     Array<Record<string, string>>
@@ -144,11 +148,13 @@ export default function AdminImportPanel() {
   const [skippedRows, setSkippedRows] = useState<
     Array<{ row_number: number; reason: string; row: Record<string, string> }>
   >([]);
-  const [emailOverrides, setEmailOverrides] = useState<
-    Record<number, string>
-  >({});
+  // Overrides used to fix missing/invalid emails in the preview.
+  const [emailOverrides, setEmailOverrides] = useState<Record<number, string>>(
+    {}
+  );
   const [emailDrafts, setEmailDrafts] = useState<Record<number, string>>({});
 
+  // Derived state for enabling steps and summarizing CSV data.
   const isSupportedType = importType === "Event Attendance";
   const missingFields = useMemo(
     () => getMissingFields(file, eventData),
@@ -171,6 +177,7 @@ export default function AdminImportPanel() {
     });
   }, [previewRows, emailHeader, emailOverrides]);
 
+  // Identify duplicates by normalized email so the user can choose one row per email.
   const duplicateGroups = useMemo<DuplicateGroup[]>(() => {
     if (!emailHeader || !resolvedPreviewRows.length) return [];
     const emailMap = new Map<
@@ -232,15 +239,19 @@ export default function AdminImportPanel() {
     return set;
   }, [duplicateGroups, duplicateSelections]);
 
+  // Flag rows with missing/invalid emails so the user can fix them before import.
   const missingEmailRows = useMemo(() => {
     if (!emailHeader || !resolvedPreviewRows.length) return [];
     return resolvedPreviewRows
-      .map((row, index) => ({
-        row,
-        originalIndex: index,
-        value: String(row[emailHeader] ?? ""),
-        isValid: isValidEmail(String(row[emailHeader] ?? "")),
-      }))
+      .map((row, index) => {
+        const value = String(row[emailHeader] ?? "");
+        return {
+          row,
+          originalIndex: index,
+          value,
+          isValid: isValidEmail(value),
+        };
+      })
       .filter((entry) => entry.value.trim().length === 0 || !entry.isValid);
   }, [resolvedPreviewRows, emailHeader]);
 
@@ -257,14 +268,7 @@ export default function AdminImportPanel() {
     !hasMissingEmails &&
     Boolean(emailHeader);
   const rowsForDisplay = useMemo(() => {
-    if (!shouldFilterDuplicates) {
-      return resolvedPreviewRows.map((row, originalIndex) => ({
-        row,
-        originalIndex,
-      }));
-    }
-
-    if (!emailHeader) {
+    if (!shouldFilterDuplicates || !emailHeader) {
       return resolvedPreviewRows.map((row, originalIndex) => ({
         row,
         originalIndex,
@@ -281,8 +285,7 @@ export default function AdminImportPanel() {
       .filter(({ row, originalIndex }) => {
         const rawEmail = String(row[emailHeader] ?? "").trim();
         const normalized = normalizeEmail(rawEmail);
-        const duplicateIndexes = duplicateIndexLookup.get(normalized);
-        if (!duplicateIndexes) return true;
+        if (!duplicateIndexLookup.has(normalized)) return true;
         return resolvedRowIndexes.has(originalIndex);
       });
   }, [
@@ -292,9 +295,10 @@ export default function AdminImportPanel() {
     duplicateGroups,
     resolvedRowIndexes,
   ]);
-  const resolvedRows = useMemo(() => {
-    return rowsForDisplay.map((entry) => entry.row);
-  }, [rowsForDisplay]);
+  const resolvedRows = useMemo(
+    () => rowsForDisplay.map((entry) => entry.row),
+    [rowsForDisplay]
+  );
   const importSummary = useMemo(() => {
     const totalRows = rowsForDisplay.length;
     const totalColumns = previewHeaders.length;
@@ -302,21 +306,19 @@ export default function AdminImportPanel() {
       return { totalRows, totalColumns, rowsWithEmptyCells: 0 };
     }
 
-    let rowsWithEmptyCells = 0;
-    for (const entry of rowsForDisplay) {
-      const row = entry.row;
+    const rowsWithEmptyCells = rowsForDisplay.reduce((count, entry) => {
       const hasEmptyCell = previewHeaders.some((header) => {
-        const value = row[header];
+        const value = entry.row[header];
         if (value === undefined || value === null) return true;
-        if (typeof value === "string") return value.trim() === "";
         return String(value).trim() === "";
       });
-      if (hasEmptyCell) rowsWithEmptyCells += 1;
-    }
+      return count + (hasEmptyCell ? 1 : 0);
+    }, 0);
 
     return { totalRows, totalColumns, rowsWithEmptyCells };
   }, [rowsForDisplay, previewHeaders]);
 
+  // Reset row-level overrides if the CSV or headers change.
   useEffect(() => {
     setDuplicateSelections({});
     setEmailOverrides({});
@@ -444,12 +446,12 @@ export default function AdminImportPanel() {
     frame();
   };
 
+  // Celebrate clean imports only when nothing was skipped.
   useEffect(() => {
     if (step === 4 && hasImported && skippedRows.length === 0) {
       handleConfetti();
     }
   }, [step, hasImported, skippedRows.length]);
-
 
   const handleImport = async () => {
     if (!isSupportedType) {
@@ -506,8 +508,9 @@ export default function AdminImportPanel() {
       form.append("event_type", eventData.eventType ?? "");
       form.append("location", eventData.location ?? "");
       form.append("committee", eventData.committee ?? "");
-      let fileToUpload: File = file as File;
-      if (emailHeader && (duplicateGroups.length || hasEmailOverrides)) {
+      let fileToUpload = file!;
+      // Rebuild CSV if the user resolved duplicates or edited emails.
+      if (emailHeader && (duplicateGroups.length > 0 || hasEmailOverrides)) {
         const csv = Papa.unparse(resolvedRows, { columns: previewHeaders });
         const resolvedName = file!.name.replace(/\.csv$/i, "") + "-resolved.csv";
         fileToUpload = new File([csv], resolvedName, { type: "text/csv" });
@@ -779,7 +782,9 @@ export default function AdminImportPanel() {
                 <Card size="sm" className="border-muted/60 bg-muted/10">
                   <CardContent className="flex items-center justify-between gap-3">
                     <div>
-                      <p className="text-xs text-muted-foreground">Rows detected</p>
+                      <p className="text-xs text-muted-foreground">
+                        Rows detected
+                      </p>
                       <p className="text-lg font-semibold">
                         {importSummary.totalRows}
                       </p>
@@ -861,30 +866,31 @@ export default function AdminImportPanel() {
                           emailDrafts[entry.originalIndex] ?? entry.value;
                         const isValid = isValidEmail(draftValue);
                         return (
-                        <TableRow key={entry.originalIndex}>
-                          <TableCell className="text-xs text-muted-foreground">
-                            {entry.originalIndex + 1}
-                          </TableCell>
-                          <TableCell className="text-xs">
-                            <Input
-                              value={draftValue}
-                              placeholder="name@sjsu.edu"
-                              onChange={(event) => {
-                                const nextValue = event.target.value;
-                                setEmailDrafts((prev) => ({
-                                  ...prev,
-                                  [entry.originalIndex]: nextValue,
-                                }));
-                              }}
-                              className={cn(
-                                "h-8 text-xs",
-                                !isValid &&
-                                  "border-destructive/60 focus-visible:border-destructive"
-                              )}
-                            />
-                          </TableCell>
-                        </TableRow>
-                      )})}
+                          <TableRow key={entry.originalIndex}>
+                            <TableCell className="text-xs text-muted-foreground">
+                              {entry.originalIndex + 1}
+                            </TableCell>
+                            <TableCell className="text-xs">
+                              <Input
+                                value={draftValue}
+                                placeholder="name@sjsu.edu"
+                                onChange={(event) => {
+                                  const nextValue = event.target.value;
+                                  setEmailDrafts((prev) => ({
+                                    ...prev,
+                                    [entry.originalIndex]: nextValue,
+                                  }));
+                                }}
+                                className={cn(
+                                  "h-8 text-xs",
+                                  !isValid &&
+                                    "border-destructive/60 focus-visible:border-destructive"
+                                )}
+                              />
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
                     </TableBody>
                   </Table>
                 </div>
@@ -1187,3 +1193,8 @@ export default function AdminImportPanel() {
     </div>
   );
 }
+
+// !heaven knows i'm miserable now
+// I want to make this 1200 lines
+// So adding this comment here
+// ?LFG :D
