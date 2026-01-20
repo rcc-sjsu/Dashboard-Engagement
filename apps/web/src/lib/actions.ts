@@ -26,10 +26,15 @@ type AddAuthorizedUserResult = AuthState & {
   };
 };
 
+const normalizeBaseUrl = (url: string) => url.replace(/\/+$/, "");
+
 const getBaseUrl = () => {
-  if (process.env.NEXT_PUBLIC_BASE_URL) return process.env.NEXT_PUBLIC_BASE_URL;
+  if (process.env.NEXT_PUBLIC_BASE_URL) {
+    return normalizeBaseUrl(process.env.NEXT_PUBLIC_BASE_URL);
+  }
   if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
-  return "https://rcc-dashboard-engagement-web.vercel.app/";
+  if (process.env.NODE_ENV === "development") return "http://localhost:3000";
+  return "https://rcc-dashboard-engagement-web.vercel.app";
 };
 
 const signInWithPassword = async (
@@ -52,11 +57,7 @@ const signInWithPassword = async (
 };
 
 const signInWithOAuth = async (provider: Provider) => {
-  const baseUrl =
-    process.env.NODE_ENV === "development"
-      ? "https://rcc-dashboard-engagement-web.vercel.app/"
-      : "https://rcc-dashboard-engagement-web.vercel.app/";
-  const redirectTo = `${baseUrl}/api/auth/callback`;
+  const redirectTo = `${getBaseUrl()}/api/auth/callback`;
   const supabase = await createClient();
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider,
