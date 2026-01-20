@@ -1,3 +1,10 @@
+"""
+Mission analytics service for member demographics and event diversity analysis.
+
+Provides breakdowns of member composition by major and class year, plus analysis
+of event attendance diversity across different academic majors.
+"""
+
 from psycopg2.extensions import connection as Connection
 
 def build_mission_payload(
@@ -7,7 +14,23 @@ def build_mission_payload(
     events_table: str = "public.events",
     attendance_table: str = "public.event_attendance",
 ):
-    """Mission analytics: member demographics + event diversity"""
+    """
+    Mission analytics: member demographics + event diversity
+    
+    Returns analysis of:
+    - Member distribution by major category
+    - Member distribution by class year
+    - Top events with attendance breakdown by major category
+    
+    Args:
+        conn: PostgreSQL database connection
+        members_table: Name of the members table (default: public.members)
+        events_table: Name of the events table (default: public.events)
+        attendance_table: Name of the attendance table (default: public.event_attendance)
+    
+    Returns:
+        dict: Formatted payload with 'mission' containing demographic distributions
+    """
 
     # Normalize major_category values to a single canonical label
     norm_major_category_sql = """
@@ -51,9 +74,10 @@ def build_mission_payload(
         END;
     """
 
-    # Get top events by total attendance
+    # Get top events by total attendance with major category breakdown
     event_diversity_sql = f"""
     WITH event_attendance_counts AS (
+        -- Get total unique attendees per event
         SELECT 
             e.id AS event_id,
             e.title AS event_title,
@@ -99,7 +123,7 @@ def build_mission_payload(
     ORDER BY eac.total_attendees DESC, emb.count DESC;
     """
 
-    # Run all mission queries
+    # Execute all mission queries
     with conn.cursor() as cur:
         cur.execute(major_dist_sql)
         major_dist = cur.fetchall()
@@ -110,11 +134,13 @@ def build_mission_payload(
         cur.execute(event_diversity_sql)
         event_rows = cur.fetchall()
 
-    # Group event rows into API response format
+    # Transform event rows into structured format
+    # Group multiple major category rows per event into single event objects
     events_dict = {}
     for row in event_rows:
         event_id = str(row["event_id"])
 
+        # Create event entry if not exists
         if event_id not in events_dict:
             events_dict[event_id] = {
                 "event_id": event_id,
@@ -124,6 +150,7 @@ def build_mission_payload(
                 "segments": []
             }
 
+        # Add major category segment to event
         events_dict[event_id]["segments"].append({
             "major_category": row["major_category"],
             "pct": float(row["pct"]),
