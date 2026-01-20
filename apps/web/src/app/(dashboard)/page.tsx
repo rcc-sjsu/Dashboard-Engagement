@@ -1,11 +1,10 @@
 import { createClient } from "@repo/supabase/server";
 import { redirect } from "next/navigation";
 
-import { ChartLineMultiple } from "@/components/ui/line-graph";
-import { ChartPieLabelList } from "@/components/ui/pie-chart";
-import { ChartBarStacked } from "@/components/ui/stacked-bar-chart";
-import { BigNumber } from "@/components/ui/kpi";
-import { RetentionDistributionChart } from "@/components/ui/retention-distribution";
+import { ChartLineMultiple } from "@/components/ui/line-graph"
+import { BigNumber } from "@/components/ui/kpi"
+import { RetentionDistributionChart } from "@/components/ui/retention-distribution"
+import { MissionSection } from "@/components/ui/mission/MissionSection";
 
 export default async function Page() {
   const supabase = await createClient();
@@ -99,20 +98,15 @@ export default async function Page() {
             />
           </div>
 
-          {/* OTHER CHARTS */}
-          <div className="grid gap-6 lg:grid-cols-3">
-            <div className="min-w-0 lg:col-span-1">
-              <ChartPieLabelList />
-            </div>
-            <div className="min-w-0 lg:col-span-2">
-              <ChartBarStacked />
-            </div>
+          <div className="min-w-0">
+            <MissionSection />
           </div>
 
           {/* RETENTION */}
           <div className="min-w-0">
             <RetentionDistributionChart />
           </div>
+
         </div>
       </div>
     </main>
