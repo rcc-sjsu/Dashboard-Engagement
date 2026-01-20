@@ -1,6 +1,6 @@
 "use client";
 
-import { Cell, LabelList, Pie, PieChart } from "recharts";
+import { Cell, Pie, PieChart } from "recharts";
 import { CardContent } from "@/components/ui/card";
 import {
   ChartContainer,
@@ -8,6 +8,11 @@ import {
   ChartTooltipContent,
   type ChartConfig,
 } from "@/components/ui/chart";
+
+type MajorSlice = {
+  major_category: string;
+  members: number;
+};
 
 const chartConfig = {
   Technical: { label: "Technical", color: "var(--chart-1)" },
@@ -17,11 +22,11 @@ const chartConfig = {
   "Other/Unknown": { label: "Other/Unknown", color: "var(--chart-5)" },
 } satisfies ChartConfig;
 
-export function PieChartMajor({
-  data,
-}: {
-  data: { major_category: string; members: number }[];
-}) {
+/**
+ * Major distribution pie chart
+ * Colors are driven by `major_category` so they stay consistent across the dashboard
+ */
+export function PieChartMajor({ data }: { data: MajorSlice[] }) {
   return (
     <CardContent className="flex-1 pb-0"> 
       <ChartContainer

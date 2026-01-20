@@ -3,7 +3,10 @@ import { redirect } from "next/navigation";
 import AdminImportPanel from "@/components/admin/AdminImportPanel";
 import { getUserRole } from "@/lib/actions";
 
-
+/**
+ * Admin-only page for importing data into the dashboard
+ * Access is restricted to authenticated users with role === "admin"
+ */
 export default async function AdminPage() {
   const supabase = await createClient();
   const {
@@ -14,13 +17,14 @@ export default async function AdminPage() {
     return redirect("/signin");
   }
 
-const result = await getUserRole();
+  // Server-side role gate (prevents non-admins from even rendering the page)
+  const result = await getUserRole();
 
-if(!result) {
-  return redirect("/");
-}
+  if(!result) {
+    return redirect("/");
+  }
 
-const { data } = result;
+  const { data } = result;
 
   if (data && data.role !== "admin") {
     return redirect("/");
