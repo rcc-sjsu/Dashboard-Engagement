@@ -1,3 +1,9 @@
+"""
+Overview analytics service for member registration and activity metrics.
+
+Provides KPIs and time-series data for tracking member growth and engagement.
+"""
+
 from psycopg2.extensions import connection as Connection
 
 def build_overview_payload(
@@ -8,6 +14,17 @@ def build_overview_payload(
 ):
     """
     Build overview analytics payload for the dashboard.
+    
+    Returns a payload with:
+    - Total members count
+    - Active members count and percentage
+    - 30-day growth rate
+    - Monthly time-series of cumulative member counts
+    
+    Args:
+        conn: PostgreSQL database connection
+        members_table: Name of the members table (default: public.members)
+        attendance_table: Name of the attendance table (not currently used)
     
     Returns:
         dict: Contains 'overview' with 'kpis' and 'members_over_time'
@@ -35,7 +52,7 @@ def build_overview_payload(
     FROM stats s, growth g;
     """
     
-   # Monthly cumulative counts of registered and active members
+    # Monthly cumulative counts of registered and active members
     time_series_sql = f"""
     SELECT 
         TO_CHAR(date_series, 'YYYY-MM') AS period,

@@ -29,6 +29,7 @@ MAJOR_HEADER_ALIASES = [
     "major / program",
     "major /program",
     "what's your major?",
+    "major / degree Area",
 ]
 
 # With data currently have, this is NOT degree program (Undergrad/Grad)
@@ -36,6 +37,7 @@ MAJOR_HEADER_ALIASES = [
 PROGRAM_HEADER_ALIASES = [
     "what year are you?",
     "year",
+    "class year",
 ]
 
 CHECKIN_HEADER_ALIASES = [

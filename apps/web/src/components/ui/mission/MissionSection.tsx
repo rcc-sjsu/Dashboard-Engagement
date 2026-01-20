@@ -54,11 +54,11 @@ const yearLegendConfig: Record<string, LegendItem> = {
 function Legend({ items }: { items: Record<string, { label: string; color: string }> }) {
     const values = Object.values(items);
     return (
-        <div className="flex flex-wrap justify-center gap-4">
+        <div className="flex flex-wrap justify-center gap-2">
         {values.map((item) => (
           <div key={item.label} className="flex items-center gap-2">
             <div className="w-3 h-3 rounded-sm" style={{ backgroundColor: item.color }} />
-            <span className="font-medium">{item.label}</span>
+            <span className="text-xs">{item.label}</span>
           </div>
         ))}
       </div>
@@ -135,13 +135,13 @@ export function MissionSection() {
 
             <div className="flex gap-8 w-full">
             {/* LEFT: Pie card (Major vs Year) */}
-                <div className="flex-[1]">
+                <div className="flex-1">
                     <Card className="flex flex-col h-full">
                         <CardHeader className="items-center pb-2">
                             <CardTitle>{showMajor ? "Members by Major Category" : "Members by Class Year"}</CardTitle>
                         </CardHeader>
 
-                <div className="flex justify-center pb-2">
+                <div className="flex justify-center ">
                     <ToggleBar
                         options={[
                             { label: "Major", value: "major" },
@@ -171,7 +171,7 @@ export function MissionSection() {
         </div>
 
         {/* RIGHT: Events stacked bar */}
-        <div className="flex-[2]">
+        <div className="flex-2">
           <MissionEventsStacked
             loading={loading}
             error={error}
