@@ -4,21 +4,15 @@ import  ToggleBar  from "@/components/ui/toggle-bar"
 import { RetentionStacked } from "@/components/ui/retention-stacked"
 import { RetentionOverall } from "@/components/ui/retention-overall"
 import { useState } from 'react'
-import { TrendingUp } from "lucide-react"
-import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts"
 
 import {
   Card,
-  CardContent,
   CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
 import {
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
   type ChartConfig,
 } from "@/components/ui/chart"
 
@@ -77,9 +71,6 @@ export function RetentionDistributionChart() {
                   <CardFooter className="flex-col items-start gap-2 text-sm">
                   </CardFooter>
                 </Card>
-
-
         </div>
-        
     );
 }
