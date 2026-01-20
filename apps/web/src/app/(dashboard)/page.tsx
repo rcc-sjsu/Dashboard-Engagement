@@ -1,6 +1,5 @@
 import { createClient } from "@repo/supabase/server";
 import { redirect } from "next/navigation";
-
 import { ChartLineMultiple } from "@/components/ui/line-graph"
 import { BigNumber } from "@/components/ui/kpi"
 import { RetentionDistributionChart } from "@/components/ui/retention-distribution"
@@ -50,8 +49,8 @@ export default async function Page() {
           </h3>
         </div>
 
+        {/* KPI CARDS */}
         <div className="flex flex-col gap-8">
-          {/* KPI CARDS */}
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
             <BigNumber
               title="Total Members"

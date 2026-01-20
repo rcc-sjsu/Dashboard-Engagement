@@ -30,18 +30,22 @@ const chartConfig = {
  */
 export function PieChartYear({ data }: { data: YearSlice[] }) {
   return (
-    <CardContent className="flex-1 pb-0">
+    <CardContent className="flex-1 h-full">
       <ChartContainer
         config={chartConfig}
-        className="mx-auto h-[260px] w-full" 
+        className="h-full w-full" 
       >
-        <PieChart>
+        <PieChart className="w-full" margin={{ top: 16, right: 16, bottom: 16, left: 16 }}>
           <ChartTooltip
             cursor={false}
             content={<ChartTooltipContent hideLabel />}
           />
 
-          <Pie data={data} dataKey="members" nameKey="class_year" isAnimationActive={false}>
+          <Pie data={data} dataKey="members" nameKey="class_year" isAnimationActive={false} 
+          label={({ value }) => {
+            if (!value) return null
+            return `${value}`
+          }} labelLine>
             {data.map((entry, i) => {
               const key = entry.class_year as keyof typeof chartConfig
               const fill = chartConfig[key]?.color ?? "var(--chart-1)"
