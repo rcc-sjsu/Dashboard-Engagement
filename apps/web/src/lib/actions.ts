@@ -55,7 +55,7 @@ const signInWithOAuth = async (provider: Provider) => {
   const baseUrl =
     process.env.NODE_ENV === "development"
       ? "https://rcc-dashboard-engagement-web.vercel.app/"
-      : process.env.NEXT_PUBLIC_BASE_URL;
+      : "https://rcc-dashboard-engagement-web.vercel.app/";
   const redirectTo = `${baseUrl}/api/auth/callback`;
   const supabase = await createClient();
   const { data, error } = await supabase.auth.signInWithOAuth({
