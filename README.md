@@ -265,7 +265,7 @@ Shared env schemas live in `packages/env/src/*.ts`.
 | Name              | Role / Title                          | Key Contributions |
 |-------------------|---------------------------------------|-------------------|
 | Julia Husainzada  |                                       |                   |
-| [Name]            |                                       |                   |
+| Emily Thach       |  Frontend developer                   | Dashboard ui/ux   |
 | [Name]            |                                       |                   |
 | [Name]            |                                       |                   |
 | [Name]            |                                       |                   |
