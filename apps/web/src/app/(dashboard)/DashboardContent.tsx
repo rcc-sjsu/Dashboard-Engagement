@@ -6,7 +6,7 @@ import { ChartLineMultiple } from "@/components/ui/line-graph";
 import { ChartPieLabelList } from "@/components/ui/pie-chart";
 import { ChartBarStacked } from "@/components/ui/stacked-bar-chart";
 import { BigNumber } from "@/components/ui/kpi";
-import { RetentionDistributionChart } from "@/components/ui/retention-distribution";
+import { RetentionDistributionChart } from "@/components/ui/retention/retention-distribution";
 import { fetchRetentionData } from "@/lib/retention";
 
 export default function DashboardContent() {

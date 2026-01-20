@@ -91,6 +91,7 @@ export function RetentionStacked({ data }: { data: any }) {
         },
       ];
 
+  // Major categories to render as stacked bars
   const keys = Object.keys(chartConfig);
 
   return (

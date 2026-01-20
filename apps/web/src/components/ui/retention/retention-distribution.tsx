@@ -1,8 +1,8 @@
 "use client";
 
 import ToggleBar from "@/components/ui/toggle-bar";
-import { RetentionStacked } from "@/components/ui/retention-stacked";
-import { RetentionOverall } from "@/components/ui/retention-overall";
+import { RetentionStacked } from "@/components/ui/retention/retention-stacked";
+import { RetentionOverall } from "@/components/ui/retention/retention-overall";
 import { useState } from "react";
 //import { TrendingUp } from "lucide-react" ; import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts"
 
