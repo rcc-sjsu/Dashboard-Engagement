@@ -11,7 +11,7 @@ interface AnalyticsData {
 
 export const fetchAnalyticsData = async (): Promise<AnalyticsData> => {
   try {
-    const response = await fetch("http://localhost:8000/analytics/", { //endpoint
+    const response = await fetch("http://localhost:8000/analytics/retention", { //endpoint
       method: "GET",
       headers: {
         "Content-Type": "application/json",
