@@ -30,3 +30,15 @@ def mission():
             return build_mission_payload(conn)
     except Exception as e:
         return {"detail": str(e)}
+
+@router.get("/")
+def analytics():
+    try:
+        with get_conn() as conn:
+            return {
+                "overview": build_overview_payload(conn),
+                "retention": build_retention_payload(conn),
+                "mission": build_mission_payload(conn) 
+            }
+    except Exception as e:
+        return {"detail": str(e)}

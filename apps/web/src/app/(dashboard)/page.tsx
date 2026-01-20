@@ -1,8 +1,8 @@
 import { createClient } from "@repo/supabase/server";
 import { redirect } from "next/navigation";
-import { ChartLineMultiple } from "@/components/ui/line-graph"
-import { BigNumber } from "@/components/ui/kpi"
-import { RetentionDistributionChart } from "@/components/ui/retention-distribution"
+import { ChartLineMultiple } from "@/components/ui/line-graph";
+import { BigNumber } from "@/components/ui/kpi";
+import { RetentionDistributionChart } from "@/components/ui/retention/retention-distribution";
 import { MissionSection } from "@/components/ui/mission/MissionSection";
 
 export default async function Page() {
@@ -15,8 +15,12 @@ export default async function Page() {
     return redirect("/signin");
   }
 
-  // Fetch overview analytics
   const base = process.env.NEXT_PUBLIC_SERVER_URL;
+  if (!base) {
+    throw new Error("NEXT_PUBLIC_SERVER_URL is not set");
+  }
+
+  // Fetch overview analytics
   const res = await fetch(`${base}/analytics/overview`, { cache: "no-store" });
 
   if (!res.ok) {
@@ -24,6 +28,22 @@ export default async function Page() {
   }
 
   const json = await res.json();
+
+  // --- RETENTION (added; rest of file unchanged) ---
+  const retentionRes = await fetch(`${base}/analytics/retention`, {
+    cache: "no-store",
+  });
+
+  if (!retentionRes.ok) {
+    throw new Error(`Retention fetch failed: ${retentionRes.status}`);
+  }
+
+  const retentionJson = await retentionRes.json();
+  const retention =
+    retentionJson?.retention?.retention ??
+    retentionJson?.retention ??
+    retentionJson;
+  // --- end retention add ---
 
   const kpis = json?.overview?.kpis ?? {};
   const membersOverTime = json?.overview?.members_over_time ?? [];
@@ -88,7 +108,9 @@ export default async function Page() {
           {/* LINE CHART */}
           <div className="min-w-0">
             <ChartLineMultiple
-              dateRangeLabel={`${json?.meta?.start ?? ""} - ${json?.meta?.end ?? ""}`}
+              dateRangeLabel={`${json?.meta?.start ?? ""} - ${
+                json?.meta?.end ?? ""
+              }`}
               data={membersOverTime.map((d: any) => ({
                 month: d.period,
                 registered: d.registered_members_cumulative,
@@ -103,9 +125,8 @@ export default async function Page() {
 
           {/* RETENTION */}
           <div className="min-w-0">
-            <RetentionDistributionChart />
+            <RetentionDistributionChart data={retention} />
           </div>
-
         </div>
       </div>
     </main>
