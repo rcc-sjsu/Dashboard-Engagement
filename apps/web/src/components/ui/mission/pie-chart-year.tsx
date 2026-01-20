@@ -28,7 +28,7 @@ export function PieChartYear({
     <CardContent className="flex-1 pb-0">
       <ChartContainer
         config={chartConfig}
-        className="mx-auto h-[260px] w-full" // className="[&_.recharts-text]:fill-background mx-auto aspect-square max-h-[250px]" 
+        className="mx-auto h-[260px] w-full" 
       >
         <PieChart>
           <ChartTooltip
