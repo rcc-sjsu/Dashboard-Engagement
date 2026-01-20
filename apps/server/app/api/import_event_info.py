@@ -23,7 +23,7 @@ EMAIL_HEADER_ALIASES = [
 ]
 
 MAJOR_HEADER_ALIASES = [
-    "degree(s) pursuing (e.g. b.b. bomputer science, humanities bA, minors)",
+    "degree(s) pursuing (e.g. b.s. computer science, humanities ba, minors)",
     "major",
     "major/ program",
     "major / program",
