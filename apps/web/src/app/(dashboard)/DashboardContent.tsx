@@ -39,18 +39,18 @@ export default function DashboardContent() {
           <div className="flex flex-col w-full gap-20 ">
             <div className="flex w-full gap-20">
               <div className="flex-1">
-                <BigNumber title={""} date={""} trending={false} />
+                <BigNumber title={""} date={""} value={""} trending={false} />
               </div>
               <div className="flex-1">
-                <BigNumber title={""} date={""} trending={false} />
+                <BigNumber title={""} date={""} value={""} trending={false} />
               </div>
               <div className="flex-1">
-                <BigNumber title={""} date={""} trending={false} />
+                <BigNumber title={""} date={""} value={""} trending={false} />
               </div>
             </div>
 
             <div className="w-full">
-              <ChartLineMultiple></ChartLineMultiple>
+              <ChartLineMultiple data={[]}></ChartLineMultiple>
             </div>
 
             <div className="w-full flex justify-center">
