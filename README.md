@@ -1,26 +1,17 @@
 # RCC Dashboard and Engagement Tool
 
-## Project Overview
+## Project Overview 📊
 The RCC Engagement Analytics Dashboard is a full-stack analytics platform designed to help the **Responsible Computing Club (RCC)** understand community growth, engagement, diversity, and retention over time.
 The system ingests member registration data and event attendance data, normalizes and reconciles them across multiple sources, and exposes chart-ready analytics APIs used by a dashboard interface.
 The goal is to provide clear, decision-ready insights for RCC leadership without manual spreadsheet analysis.
 
-## Key Questions Answered
-- *How many members does RCC have?*
-- *How many members are active?*
-- *How fast is the community growing?*
+### Key Questions Answered 🤔
+- *How many members does RCC have? How many members are active?*
 - *Who makes up the RCC community (academics, year levels)?*
 - *Are events attracting a diverse audience?*
 - *How well does RCC retain attendees across multiple events?*
 
-## Key Features
-- Dashboard Analytics
-- CSV-based event attendance import
-- Automatic data normalization & cleaning
-- Admin-only import & analytics access
-- Chart-ready API responses
-
-### Analytics
+### Analytics 📊
 - KPI cards (total members, active %, growth rate)
 - Line charts (cumulative membership growth over time)
 - Pie charts (major category distribution, class year distribution)
@@ -28,7 +19,7 @@ The goal is to provide clear, decision-ready insights for RCC leadership without
 - Bar charts ( explaining how many people attended 0, 1, 2, 3, or 4+ events)
 - Grouped / stacked views by major category
 
-## User Flow (High-Level)
+## User Flow (High-Level) 🔀
 1. Members register through a standardized form → stored in members
 2. Admin uploads event attendance CSVs → parsed and normalized
 3. Attendance is linked to members when possible
@@ -36,7 +27,7 @@ The goal is to provide clear, decision-ready insights for RCC leadership without
 5. Dashboard fetches analytics via read-only endpoints
 6. Charts render using pre-aggregated backend data
 
-## Tech Stack
+## Tech Stack 🛠️
 - Next.js 16 (App Router) and React 19
 - Tailwind CSS v4, shadcn/ui, Base UI
 - next-themes, sonner, motion
@@ -45,7 +36,7 @@ The goal is to provide clear, decision-ready insights for RCC leadership without
 - Bun and Turborepo
 - Supabase auth & Supabase (PostgreSQL)
 
-## Repository Layout
+## Repository Layout 📁
 RCC Dashboard and Engagement Tool is a Turborepo monorepo for a dashboard web app and shared packages.
 ```
 Turborepo/
@@ -56,10 +47,10 @@ Turborepo/
     ├── config/        # Shared TS config
     └── env/           # Shared env schemas (server/web/native)
 ```
-## Architecture (High-Level)
+## Architecture (High-Level) 🏛️
 - Frontend fetches analytics via GET endpoints
 - Admin actions (event imports) use POST multipart/form-data
-- Backend returns fully computed JSON (no frontend aggregation)
+- Backend returns fully computed JSON
 
 ### 1️⃣ Member Registration
 ```
@@ -83,7 +74,7 @@ REST Analytics Endpoints
           ↓
 Next.js Dashboard UI
 ```
-## API Endpoints
+## API Endpoints 🔗
 ### Overview Analytics
 ```GET /analytics/overview```
 Returns:
@@ -124,7 +115,7 @@ Returns:
 - Skipped rows with reasons
 - Warnings
 
-## Data Assumptions & Logic
+## Data Assumptions & Logic 📝
 ### Members vs Non-Members
 - Members are identified by email match with members.email
 - Non-members are still included in:
@@ -147,24 +138,22 @@ Returns:
 
 ### Normalization Rules
 #### Email
-- Lowercased, whitespace removed, used as global unique identifier
+Lowercased, whitespace removed, used as global unique identifier
 #### Major
-- Free-text majors are normalized into:
-    - major_normalized
-    - major_category (Technical, Business, Humanities & Arts, Health Sciences, Other/Unknown)
+Free-text majors are normalized into major_normalized & major_category (Technical, Business, Humanities & Arts, Health Sciences, Other/Unknown)
 #### Degree Program
-- Derived using:
-    - Explicit class year (Freshman → Undergraduate)
-    - Major tokens (e.g., “M.S.” → Graduate)
-    - Member record fallback
+Derived using:
+- Explicit class year (Freshman → Undergraduate)
+- Major tokens (e.g., “M.S.” → Graduate)
+- Member record fallback
 
-## Data Schema
+## Data Schema 📑
 - **members**: Stores registered RCC members and normalized demographic data.
 - **events**: Stores event metadata (no attendance).
 - **event_attendance**: Stores attendee engagement, supports members + non-members.
 - **profiles**: Controls platform access (admin vs member).
 
-## Getting Started (monorepo)
+## Getting Started (monorepo) ⚙️
 
 Prerequisites: Bun 1.2+, Python 3.10+, Node.js (for Turbo)
 
@@ -267,12 +256,12 @@ Shared env schemas live in `packages/env/src/*.ts`.
 - `bun run check-types`: Typecheck across the repo
 - `bun run server:install`: Create the server venv in `apps/server` (no pip)
 
-## Future Improvements
+## Future Improvements 🚀
 - Improved major data collection and analytics
 - Event cohort analysis (first-time vs. returning)
 - Attendance trend forecasting
 
-## Contributors & Roles
+## Contributors & Roles 🤝
 | Name              | Role / Title                          | Key Contributions |
 |-------------------|---------------------------------------|-------------------|
 | Julia Husainzada  |                                       |                   |
