@@ -1,13 +1,13 @@
 "use client"; //Client Component:  interactive UI (toggles, charts, state)
 
 import { useEffect, useState } from "react";
-import { ResponsiveContainer } from "recharts";
+// import { ResponsiveContainer } from "recharts";
 import { ChartLineMultiple } from "@/components/ui/line-graph";
 import { ChartPieLabelList } from "@/components/ui/pie-chart";
 import { ChartBarStacked } from "@/components/ui/stacked-bar-chart";
 import { BigNumber } from "@/components/ui/kpi";
 import { RetentionDistributionChart } from "@/components/ui/retention-distribution";
-import { fetchAnalyticsData } from "@/lib/analytics";
+import { fetchRetentionData } from "@/lib/retention";
 
 export default function DashboardContent() {
   const [retentionData, setRetentionData] = useState<any>(null);
@@ -16,7 +16,7 @@ export default function DashboardContent() {
   useEffect(() => {
     const loadRetention = async () => {
       try {
-        const data = await fetchAnalyticsData();
+        const data = await fetchRetentionData();
         const retention = data.retention?.retention || data.retention; //extract retention data if it exist
         setRetentionData(retention);
       } catch (err) {
@@ -48,9 +48,11 @@ export default function DashboardContent() {
                 <BigNumber title={""} date={""} trending={false} />
               </div>
             </div>
+
             <div className="w-full">
               <ChartLineMultiple></ChartLineMultiple>
             </div>
+
             <div className="w-full flex justify-center">
               <div className="flex gap-8 w-full ">
                 <div className="flex-[1] h-full">
@@ -61,7 +63,9 @@ export default function DashboardContent() {
                 </div>
               </div>
             </div>
-            <RetentionDistributionChart data={retentionData} /> //
+
+            {/* pass in data to retention */}
+            <RetentionDistributionChart data={retentionData} />
           </div>
         </div>
       </div>
