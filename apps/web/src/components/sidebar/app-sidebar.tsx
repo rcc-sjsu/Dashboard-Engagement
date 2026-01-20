@@ -68,7 +68,7 @@ export async function AppSidebar({
               className="data-[slot=sidebar-menu-button]:p-1.5!"
             >
                 {/* <IconInnerShadowTop className="!size-5" /> */}
-                <span className="text-base font-semibold">RCC SJSU.</span>
+                <span className="text-base font-semibold">RCC SJSU</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
