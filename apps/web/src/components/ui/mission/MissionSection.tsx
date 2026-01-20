@@ -2,12 +2,12 @@
 
 import { useEffect, useMemo, useState } from "react";
 import ToggleBar from "@/components/ui/toggle-bar";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { PieChartMajor } from "@/components/ui/mission/pie-chart-major";
 import { PieChartYear } from "@/components/ui/mission/pie-chart-year";
 import { MissionEventsStacked } from "@/components/ui/mission/MissionEventsStacked";
 
-// Matching mission.py output
+// Matching mission.py output shape
 type MajorDistItem = { major_category: string; members: number };
 type YearDistItem = { class_year: string; members: number };
 
@@ -31,7 +31,6 @@ type MissionPayload = {
 const MAJOR_ORDER = ["Technical", "Business", "Humanities & Arts", "Health Sciences", "Other/Unknown"] as const;
 const YEAR_ORDER = ["Freshman", "Sophomore", "Junior", "Senior", "Grad", "Other/Unknown", "4th+ year"] as const;
 
-// Legend config 
 const majorLegendConfig: Record<string, { label: string; color: string }> = {
     Technical: { label: "Technical", color: "var(--chart-1)" },
     Business: { label: "Business", color: "var(--chart-2)" },
@@ -40,7 +39,9 @@ const majorLegendConfig: Record<string, { label: string; color: string }> = {
     "Other/Unknown": { label: "Other/Unknown", color: "var(--chart-5)" },
 };
 
-const yearLegendConfig: Record<string, {label: string; color: string }> = {
+type LegendItem = { label: string; color: string };
+
+const yearLegendConfig: Record<string, LegendItem> = {
     Freshman: { label: "Freshman", color: "var(--chart-1)" },
     Sophomore: { label: "Sophomore", color: "var(--chart-2)" },
     Junior: { label: "Junior", color: "var(--chart-3)" },
@@ -64,6 +65,11 @@ function Legend({ items }: { items: Record<string, { label: string; color: strin
     );
 }
 
+/**
+ * MissionSection fetches /analytics/mission once and uses data for:
+ * - Pie chart (Major vs Year toggle)
+ * - Stacked event diversity chart
+ */
 export function MissionSection() {
     // Major vs Year toggle
     const [showMajor, setShowMajor] = useState(true);
@@ -73,6 +79,7 @@ export function MissionSection() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
+    // Fetch mission payload once on mount
     useEffect(() => {
         async function loadMission() {
             try {
@@ -101,6 +108,7 @@ export function MissionSection() {
         loadMission();
     }, []);
 
+    // Fill missing categories with 0 so charts/legends stay stable even if a category is absent
     const majorDist = useMemo(() => {
         const dist = payload?.mission.major_category_distribution ?? [];
         // order + fill missing to 0

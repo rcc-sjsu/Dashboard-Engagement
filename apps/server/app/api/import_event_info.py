@@ -11,8 +11,9 @@ from supabase import create_client, Client
 
 router = APIRouter(prefix="/api/import", tags = ["import"])
 
-# Header aliases
-# Use "contains" matching so headers don't need to match exactly
+# -----------------------------
+# CSV header aliases (contains-match)
+# -----------------------------
 EMAIL_HEADER_ALIASES = [
     "sjsu email",
     "email address",
@@ -41,7 +42,9 @@ CHECKIN_HEADER_ALIASES = [
     "timestamp",
 ]
 
-# Supabase Client
+# -----------------------------
+# Supabase client
+# -----------------------------
 def get_supabase() -> Client:
     url = os.environ.get("SUPABASE_URL")
     key = os.environ.get("SUPABASE_SERVICE_ROLE_KEY")
@@ -50,21 +53,25 @@ def get_supabase() -> Client:
 
     return create_client(url, key)
 
-# ---- Normalize Text for matching ----
-'''
-Clean string whitespacing
-'''
+# -----------------------------
+# Helpers: normalization + parsing
+# -----------------------------'''
 def normalize_text(s: str) -> str:
+    """Lowercase, trim, collapse internal whitespace"""
     s = (s or "").strip().lower()
     s = re.sub(r"\s+", " ", s)
 
     return s
 
 def normalize_email(email: str) -> str:
+    """Normalize emails (remove ALL whitespace, lowercase)"""
     return re.sub(r"\s+", "", (email or "").strip().lower())
 
 def find_header(headers: List[str], aliases: List[str]) -> Optional[str]:
-    #Finds first header whose lowercase form CONTAINS any alias keyword
+    """
+    Finds the first header whose lowercase form contains any alias keyword
+    This allows flexible form exports (e.g., "SJSU Email Address", "Email (SJSU)", etc.)
+    """
     normalized_headers = [((h or "").strip().lower(), h) for h in headers]
     for alias in aliases:
         a = alias.strip().lower()
@@ -81,25 +88,11 @@ def title_case(s: str) -> str:
         if w                        # skip empty tokens
     )
 
-def normalize_program(program_raw: str) -> str:
-    '''
-    Normalize explicit program strings to Undergraduate/Graduate/Unknown
-    Currently not needed 
-    '''
-    p = normalize_text(program_raw)
-    if p in ("", "n/a", "na", "none", "unknown", "undeclared"):
-        return "Unknown"
-    if any(x in p for x in ("ms", "m.s", "mba", "masters", "phd", "doctor", "graduate")):
-        return "Graduate"
-    if any(x in p for x in ("bs", "b.s", "ba", "b.a", "bachelors", "undergrad", "undergraduate")):
-        return "Undergraduate"
-    return "Unknown"
-
 def normalize_class_year_to_program(class_year_raw: str) -> str:
-    '''
-    Converts year into Undergraduate/Graduate/Unknown
-    Represent PROGRAM_HEADER_ALIASES
-    '''
+    """
+    Converts class standing into Undergraduate/Graduate/Unknown
+    This is a heuristic based on typical form responses
+    """
     y = normalize_text(class_year_raw)
     if y in ("freshman", "sophomore", "junior", "senior", "undergraduate", "undergrad", "1st year", "2nd year", "3rd year", "4th year"):
         return "Undergraduate"
@@ -110,7 +103,7 @@ def normalize_class_year_to_program(class_year_raw: str) -> str:
     return "Unknown"
 
 def infer_degree_program_from_major_raw(major_raw: str) -> Optional[str]:
-    # Infer Graduate/Undergraduate from tokens inside major string (e.g. "M.S. CS", "B.S. CS")
+    """Infer Graduate/Undergraduate from tokens in the major string (e.g., 'M.S. CS')"""
     s = normalize_text(major_raw)
 
     # Search for grad tokens
@@ -120,7 +113,7 @@ def infer_degree_program_from_major_raw(major_raw: str) -> Optional[str]:
     ):
         return "Graduate"
 
-    # Search for string undergrad tokens
+    # Search for undergrad tokens
     if re.search(
         r"(b\.?\s?s\.?)|\bbs\b|(b\.?\s?a\.?)|\bba\b|\bbfa\b|\bbm\b|bachelor|undergrad",
         s
@@ -131,7 +124,7 @@ def infer_degree_program_from_major_raw(major_raw: str) -> Optional[str]:
     return None 
 
 def major_base_for_matching(major_raw: str) -> str:
-    # Retrieve major
+    """Cleans major raw input into a base string suitable for alias matching"""
     s = normalize_text(major_raw)
 
     if not s:
@@ -151,7 +144,7 @@ def major_base_for_matching(major_raw: str) -> str:
     # Edge case - remove "concentration..." and everything after
     s = re.sub(r"\bconcentration\b.*$", " ", s).strip()
 
-    # Remove degree tokens anywhere in string
+    # Remove degree tokens
     s = re.sub(
         r"\b(b\.?\s?s\.?|b\.?\s?a\.?|m\.?\s?s\.?|mba|phd|bachelors?|masters?|undergrad(uate)?|graduate|bs|ba|ms|ma|mfa|mph|mm|mlis|mpa|msw|mat|mup|mbt|mara|bfa|bm)\b",
         " ",
@@ -162,10 +155,10 @@ def major_base_for_matching(major_raw: str) -> str:
     return s
 
 def normalize_major_and_category(major_raw: str) -> Tuple[str, str]:
-    '''
+    """
     Returns (major_normalized, major_category)
     Categories: Technical, Business, Humanities & Arts, Health Sciences, Other/Unknown
-    '''
+    """
     base = major_base_for_matching(major_raw)
 
     if not base or re.match(r"^(n\/a|na|none|blank|undeclared|undecided|unknown)$", base, flags=re.I):
@@ -220,7 +213,7 @@ def normalize_major_and_category(major_raw: str) -> Tuple[str, str]:
             if base == k or k in base:
                 return (major, cat)
     
-    # If base has certain keywords, can also classify
+    # Keyword fallback
     if any(w in base for w in [
         "engineering", "computer", "data", "statistics", "mathematics", "math",
         "physics", "chemistry", "geology", "meteorology", "climate",
@@ -248,10 +241,10 @@ def normalize_major_and_category(major_raw: str) -> Tuple[str, str]:
     return ("Unknown", "Other/Unknown")
 
 def parse_datetime_local(dt_str: str) -> str:
-    '''
-    Parses HTML datetime-local (YYYY-MM-DDTHH:MM)
+    """
     Returns ISO string
-    '''
+    Parses HTML datetime-local format (YYYY-MM-DDTHH:MM)
+    """
     s = (dt_str or "").strip()
     if not s:
         raise ValueError("starts_at is empty")
@@ -263,10 +256,10 @@ def parse_datetime_local(dt_str: str) -> str:
     return s
 
 def parse_check_in_at(s: str) -> Optional[str]:
-    '''
+    """
     Strict parser for Google Forms timestamp format:
     11/21/2025 17:33:16  -> %m/%d/%Y %H:%M:%S
-    '''
+    """
     s = (s or "").strip()
     if not s:
         return None
@@ -274,7 +267,10 @@ def parse_check_in_at(s: str) -> Optional[str]:
         return datetime.strptime(s, "%m/%d/%Y %H:%M:%S").isoformat()
     except ValueError:
         raise HTTPException(status_code=400, detail="Timestamp in csv upload is not consistent with expected format %m/%d/%Y %H:%M:%S")
-    
+
+# -----------------------------
+# Endpoint: import event attendance
+# -----------------------------
 @router.post("/event-attendance")
 async def import_event_attendance(
     import_type: str = Form(...), # expect "event_attendance"
@@ -306,7 +302,7 @@ async def import_event_attendance(
 
     et = (event_type or "").strip() or None
    
-    # Validate file
+    # Validate file type
     if not file.filename.lower().endswith(".csv"):
         raise HTTPException(status_code=400, detail="File must be a .csv")
 
@@ -316,7 +312,8 @@ async def import_event_attendance(
     reader = csv.DictReader(io.StringIO(csv_text))
     headers = reader.fieldnames or []
 
-    # Detect email/major/program/checkin columns
+    # Detect headers
+    # email/major/program/checkin columns
     email_col = find_header(headers, EMAIL_HEADER_ALIASES)
     if not email_col:
         raise HTTPException(status_code=400, detail = "CSV must include an email column (Email / SJSU Email / Email Address).")
@@ -325,7 +322,7 @@ async def import_event_attendance(
     program_col = find_header(headers, PROGRAM_HEADER_ALIASES) # class year col
     checkin_col = find_header(headers, CHECKIN_HEADER_ALIASES) # timestamp col
 
-    # Insert event into events table
+    # Insert event row in events table
     event_payload = {
         "title": title,
         "starts_at": starts_at_iso,
@@ -349,7 +346,7 @@ async def import_event_attendance(
 
     event_id = event_insert.data[0]["id"] # Generated UUID
 
-    # Load members once
+    # Load members once for fast lookup
     members_resp = supabase.table("members").select(
         "email,major_raw,major_normalized,major_category,degree_program"
     ).execute()
@@ -363,6 +360,7 @@ async def import_event_attendance(
             key = normalize_email(email)
             members_by_email[key] = m
 
+    # Row processing stats
     rows_received = 0
     rows_skipped = 0
     rows_imported = 0
@@ -397,7 +395,7 @@ async def import_event_attendance(
 
         attendee_email = normalize_email(email_raw)
 
-        # Prevent duplicates inside the same CSV file
+        # Prevent duplicates within same CSV file
         if attendee_email in seen_emails:
             warn_duplicate_email += 1
             rows_skipped += 1
@@ -417,6 +415,7 @@ async def import_event_attendance(
         # NOTE: always will have check in col 
         checkin_raw = (row.get(checkin_col) or "").strip() if checkin_col else ""
 
+        # Check-in timestamp but do not fail the entire upload if one row is bad
         check_in_iso = None
         check_in_parse_error = None
         if checkin_raw:
@@ -427,7 +426,7 @@ async def import_event_attendance(
                 check_in_iso = None
                 check_in_parse_error = str(e.detail)
         
-        # Program selection
+        # Determine program (Undergrad/Grad/Unknown) from class standing, inferred major tokens, or member row
         used_program_source = "unknown"
         attendee_program = "Unknown"
         if class_year_raw:
@@ -446,7 +445,7 @@ async def import_event_attendance(
             else:
                 warn_missing_program += 1
         
-        # Major selection
+        # Determine major/category from CSV first, then member row, else Unknown
         used_major_source = "unknown"
         attendee_major_raw = None
         attendee_major_normalized = "Unknown"
@@ -464,8 +463,10 @@ async def import_event_attendance(
         else:
             warn_missing_major += 1
         
+        # Link attendance to members table if possible
         member_email = attendee_email if member else None
 
+        # Separate known columns vs extras for metadata debugging
         recognized_cols = {email_col}
         if major_col:
             recognized_cols.add(major_col)
@@ -502,7 +503,7 @@ async def import_event_attendance(
         ).execute()
         rows_imported = len(attendance_rows)
 
-        # Only members can become active
+        # Only members can become active; recompute for affected member emails only
         affected_members = sorted({r["member_email"] for r in attendance_rows if r["member_email"]})
         
         if affected_members:

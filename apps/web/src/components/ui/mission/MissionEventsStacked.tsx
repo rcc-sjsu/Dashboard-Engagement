@@ -2,10 +2,23 @@
 
 import { useMemo } from "react";
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ChartContainer, ChartLegend, ChartLegendContent, ChartTooltip, ChartTooltipContent, type ChartConfig } from "@/components/ui/chart";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { 
+    ChartContainer, 
+    ChartLegend, 
+    ChartLegendContent, 
+    ChartTooltip, 
+    ChartTooltipContent, 
+    type ChartConfig 
+} from "@/components/ui/chart";
 
-type EventSegment = { major_category: string; pct: number; count: number };
+// Backend segment for an event (from mission endpoint) 
+type EventSegment = { 
+    major_category: string; 
+    pct: number; 
+    count: number };
+
+// Backend event object for stacked chart (from mission endpoint)
 type EventMajorCategoryPercent = {
     event_id: string;
     event_title: string;
@@ -21,7 +34,12 @@ type Props = {
     majorOrder: string[]
 };
 
+/**
+ * Stacked bar chart: each bar = event, each segment = major category
+ * Uses `count` (not %) so the stacked height equals total categorized attendees
+ */
 export function MissionEventsStacked( { loading, error, events, majorOrder }: Props ) {
+    // one object per event with keys for each major category
     const data = useMemo(() => {
         return events
         .slice()
@@ -35,10 +53,10 @@ export function MissionEventsStacked( { loading, error, events, majorOrder }: Pr
                 label: evt.event_title.length > 18 ? evt.event_title.slice(0, 18) + "…" : evt.event_title,
             };
 
-            // all major keys initialized to 0
+            // Every event row must have every major key so stacking/legend is consistent
             for (const m of majorOrder) row[m] = 0;
 
-            // fill in pct from segments
+            // Fill counts for majors in event segments
             for (const seg of evt.segments) {
                 row[seg.major_category] = seg.count ?? 0;
             }

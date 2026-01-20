@@ -9,6 +9,11 @@ import {
   type ChartConfig,
 } from "@/components/ui/chart"
 
+type YearSlice = {
+  class_year: string;
+  members: number;
+};
+
 const chartConfig = {
   Freshman: { label: "Freshman", color: "var(--chart-1)" },
   Sophomore: { label: "Sophomore", color: "var(--chart-2)" },
@@ -19,11 +24,11 @@ const chartConfig = {
   "4th+ year": { label: "4th+ year", color: "var(--chart-7)" },
 } satisfies ChartConfig
 
-export function PieChartYear({
-  data,
-}: {
-  data: { class_year: string; members: number }[]
-}) {
+/**
+ * Class year distribution pie chart
+ * Slice colors are keyed by `class_year` for consistency across charts
+ */
+export function PieChartYear({ data }: { data: YearSlice[] }) {
   return (
     <CardContent className="flex-1 pb-0">
       <ChartContainer
