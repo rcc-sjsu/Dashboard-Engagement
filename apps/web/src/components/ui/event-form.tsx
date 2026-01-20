@@ -58,6 +58,7 @@ const LOCATION_OPTIONS = [
   { value: "MLK 255", label: "MLK 255" },
   { value: "Student Union", label: "Student Union" },
   { value: "Tower Lawn", label: "Tower Lawn" },
+  { value: "Online", label: "Online" },
   { value: "Other", label: "Other" },
 ] as const;
 
