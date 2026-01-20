@@ -1,7 +1,6 @@
-"use client"
+"use client";
 
-import { TrendingUp } from "lucide-react"
-import { CartesianGrid, Line, LineChart, XAxis, YAxis, Legend } from "recharts"
+import { CartesianGrid, Line, LineChart, XAxis, YAxis, Legend } from "recharts";
 
 import {
   Card,
@@ -10,24 +9,16 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card"
+} from "@/components/ui/card";
+
 import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
   type ChartConfig,
-} from "@/components/ui/chart"
+} from "@/components/ui/chart";
 
-export const description = "A multiple line chart"
-
-const chartData = [
-  { month: "January", registered: 186, active: 80 },
-  { month: "February", registered: 305, active: 200 },
-  { month: "March", registered: 237, active: 120 },
-  { month: "April", registered: 73, active: 190 },
-  { month: "May", registered: 209, active: 130 },
-  { month: "June", registered: 214, active: 140 },
-]
+export const description = "A multiple line chart";
 
 const chartConfig = {
   registered: {
@@ -38,58 +29,74 @@ const chartConfig = {
     label: "Active",
     color: "var(--chart-2)",
   },
-} satisfies ChartConfig
+} satisfies ChartConfig;
 
-export function ChartLineMultiple() {
+type LineChartDatum = {
+  month: string; // e.g. "2025-09" or "Sep"
+  registered: number;
+  active: number;
+};
+
+export function ChartLineMultiple({
+  data,
+  dateRangeLabel,
+}: {
+  data: LineChartDatum[];
+  dateRangeLabel?: string;
+}) {
   return (
     <Card>
       <CardHeader>
         <CardTitle>Member Growth Over Time</CardTitle>
-        <CardDescription>Aug 2025 - Jan 2026</CardDescription>
+        <CardDescription>{dateRangeLabel ?? ""}</CardDescription>
       </CardHeader>
+
       <CardContent>
         <ChartContainer config={chartConfig}>
-          <LineChart
-            accessibilityLayer
-            data={chartData}
-            margin={{
-              left: 12,
-              right: 12,
-            }}
-          >
+          <LineChart accessibilityLayer data={data} margin={{ left: 12, right: 12 }}>
             <CartesianGrid vertical={false} />
+
             <XAxis
               dataKey="month"
               tickLine={false}
               axisLine={false}
               tickMargin={8}
-              tickFormatter={(value) => value.slice(0, 3)}
+              tickFormatter={(value) => {
+                const s = String(value);
+                // If value is YYYY-MM, show MM (or you can change to month name later)
+                if (/^\d{4}-\d{2}$/.test(s)) return s.slice(5);
+                return s.length > 3 ? s.slice(0, 3) : s;
+              }}
             />
-              <YAxis
-                tickLine={false}
-                axisLine={false}
-                tickMargin={8}
-                label={{
-                  value: "Member Count",
-                  angle: -90,
-                  position: "insideLeft",
-                  offset: -5,
-                }}
-              />
+
+            <YAxis
+              tickLine={false}
+              axisLine={false}
+              tickMargin={8}
+              label={{
+                value: "Member Count",
+                angle: -90,
+                position: "insideLeft",
+                offset: -5,
+              }}
+            />
+
             <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
-            <Legend /> 
+            <Legend />
+
             <Line
               dataKey="registered"
               type="monotone"
-              name={chartConfig.registered.label} 
+              name={chartConfig.registered.label}
               stroke={chartConfig.registered.color}
               strokeWidth={2}
               dot={false}
             />
+
             <Line
               dataKey="active"
               type="monotone"
-              name={chartConfig.active.label} 
+              name={chartConfig.active.label}
               stroke={chartConfig.active.color}
               strokeWidth={2}
               dot={false}
@@ -97,13 +104,8 @@ export function ChartLineMultiple() {
           </LineChart>
         </ChartContainer>
       </CardContent>
-      <CardFooter>
-        <div className="flex w-full items-start gap-2 text-sm">
-          <div className="grid gap-2">
-            
-          </div>
-        </div>
-      </CardFooter>
+
+      <CardFooter />
     </Card>
-  )
+  );
 }
