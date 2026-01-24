@@ -262,12 +262,12 @@ Shared env schemas live in `packages/env/src/*.ts`.
 - Attendance trend forecasting
 
 ## Contributors & Roles 🤝
-| Name              | Role / Title                          | Key Contributions |
-|-------------------|---------------------------------------|-------------------|
-| Julia Husainzada  |                                       |                   |
-| Emily Thach       |  Frontend developer                   | Dashboard design & ui/ux, data schema, customized ui charts/components |
-| Asmita Dulla      |                                       |                   |
-| Izabella          |                                       |                   |
-| Samriddhi Matharu |                                       |                   |
-| Om Shah           |  Can write Code 😳                                     |                   |
-| [Name]            |                                       |                   |
+| Name              | Role / Title                          | Key Contributions                                  |
+|-------------------|---------------------------------------|----------------------------------------------------|
+| Julia Husainzada  |                                       |                                                    |
+| Asmita Dulla      |                                       |                                                    |
+| Izabella          |                                       |                                                    |
+| Samriddhi Matharu |                                       |                                                    |
+| Emily Thach       |  Frontend developer                   | Dashboard ui/ux                                    |
+| Pouya Anvari      |  Full-Stack developer                 | Figma design, UI wiring, API & Endpoint Aggregation|
+| Om Shah           |  Builder.                             | Can write Code and owns a computer                 |
