@@ -28,7 +28,7 @@ const chartConfig = {
  */
 export function PieChartMajor({ data }: { data: MajorSlice[] }) {
   return (
-    <CardContent className="flex-1 h-full"> 
+    <CardContent className="flex-1 min-h-[260px] sm:min-h-[320px] lg:min-h-[360px]"> 
       <ChartContainer
         config={chartConfig}
         className="h-full w-full"

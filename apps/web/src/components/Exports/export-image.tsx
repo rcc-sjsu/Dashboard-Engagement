@@ -15,11 +15,6 @@ import {
 import { useTheme } from "next-themes"
 import { usePathname } from "next/navigation"
 
-type ExportDashboardButtonProps = {
-  targetId: string
-  isAdmin?: boolean
-}
-
 const PNG_PADDING = 32
 
 const formatFileDate = () => {
@@ -91,24 +86,18 @@ const convertColorToRgb = (color: string): [number, number, number] => {
   return [255, 255, 255]
 }
 
-type ExportImageProps = {
-  targetId: string
-}
-
-export default function ExportImage({ targetId }: ExportImageProps) {
+export default function ExportImage() {
   const [isExporting, setIsExporting] = useState(false)
   const { theme, systemTheme } = useTheme()
   const resolvedTheme = theme === "system" ? systemTheme : theme
   const pathname = usePathname()
 
-  const handleExport = async (format: "pdf" | "png") => {
-    const target = document.getElementById(targetId)
-      if(pathname?.includes("/admin")) {
-    toast.error("Exporting is not available in the admin panel.", {
-      description: "Please navigate to the main dashboard to export data.",
-    })
+  if (pathname !== "/") {
     return null
   }
+
+  const handleExport = async (format: "pdf" | "png") => {
+    const target = document.querySelector<HTMLElement>("main")
 
     if (!target) {
       toast.error("Unable to find dashboard content.")

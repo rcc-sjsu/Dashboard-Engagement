@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import ToggleBar from "@/components/ui/toggle-bar";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { PieChartMajor } from "@/components/ui/mission/pie-chart-major";
@@ -33,11 +33,11 @@ const yearLegendConfig: Record<string, LegendItem> = {
 function Legend({ items }: { items: Record<string, { label: string; color: string }> }) {
     const values = Object.values(items);
     return (
-        <div className="flex flex-wrap justify-center gap-2">
+        <div className="flex flex-wrap justify-center gap-2 text-[11px] sm:text-xs">
         {values.map((item) => (
           <div key={item.label} className="flex items-center gap-2">
             <div className="w-3 h-3 rounded-sm" style={{ backgroundColor: item.color }} />
-            <span className="text-xs">{item.label}</span>
+            <span>{item.label}</span>
           </div>
         ))}
       </div>
@@ -86,7 +86,7 @@ export function MissionSection({ data }: { data: MissionData }) {
     const events = data?.event_major_category_percent ?? [];
 
     return (
-        <section className="w-full flex flex-col gap-8">
+        <section className="w-full flex flex-col gap-6 sm:gap-8">
             <div className="flex flex-col gap-2">
                 <h3 className="text-xl font-semibold">Who We’re Growing (Mission)</h3>
                 <p className="text-sm text-muted-foreground">
@@ -94,46 +94,44 @@ export function MissionSection({ data }: { data: MissionData }) {
                 </p>
             </div>
 
-            <div className="flex gap-8 w-full">
+            <div className="grid w-full gap-6 lg:grid-cols-[minmax(0,420px)_minmax(0,1fr)]">
             {/* LEFT: Pie card (Major vs Year) */}
-                <div className="flex-1">
-                    <Card className="flex flex-col h-full">
-                        <CardHeader className="items-center pb-2">
+                <div className="min-w-0">
+                    <Card className="flex h-full flex-col">
+                        <CardHeader className="items-center pb-2 text-center">
                             <CardTitle>{showMajor ? "Members by Major Category" : "Members by Class Year"}</CardTitle>
                         </CardHeader>
 
-                <div className="flex justify-center ">
-                    <ToggleBar
-                        options={[
-                            { label: "Major", value: "major" },
-                            { label: "Year", value: "year" },
-                        ]}
-                        onChange={(v) => setShowMajor(v === "major")}
-                    />
+                        <div className="flex justify-center px-6 pb-2">
+                            <ToggleBar
+                                options={[
+                                    { label: "Major", value: "major" },
+                                    { label: "Year", value: "year" },
+                                ]}
+                                onChange={(v) => setShowMajor(v === "major")}
+                            />
+                        </div>
+
+                        {showMajor ? (
+                            <PieChartMajor data={majorDist} />
+                        ) : (
+                            <PieChartYear data={yearDist} />
+                        )}
+
+                        <CardFooter className="flex flex-col gap-3 pt-2 text-sm">
+                            {showMajor ? <Legend items={majorLegendConfig} /> : <Legend items={yearLegendConfig} />}
+                        </CardFooter>
+                    </Card>
                 </div>
 
-                <CardContent className="flex-1 min-h-0">
-                    {showMajor ? (
-                        <PieChartMajor data={majorDist} />
-                    ) : (
-                        <PieChartYear data={yearDist} />
-                    )}
-                </CardContent>
-
-                <CardFooter className="flex flex-col gap-3 text-sm">
-                    {showMajor ? <Legend items={majorLegendConfig} /> : <Legend items={yearLegendConfig} />}
-                </CardFooter>
-            </Card>
-        </div>
-
-        {/* RIGHT: Events stacked bar */}
-        <div className="flex-2">
-          <MissionEventsStacked
-            events={events}
-            majorOrder={[...MAJOR_ORDER]}
-          />
-        </div>
-      </div>
+                {/* RIGHT: Events stacked bar */}
+                <div className="min-w-0">
+                    <MissionEventsStacked
+                        events={events}
+                        majorOrder={[...MAJOR_ORDER]}
+                    />
+                </div>
+            </div>
     </section>
   );
 }

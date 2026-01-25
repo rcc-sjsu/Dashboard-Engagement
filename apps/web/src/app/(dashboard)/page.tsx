@@ -65,8 +65,8 @@ export default async function Page() {
   const growthPct = growthRaw <= 1 ? growthRaw * 100 : growthRaw;
 
   return (
-    <main className="flex w-full flex-1 flex-col gap-8 px-4 py-6 sm:px-6 lg:px-10 xl:px-12">
-      <div className="mx-auto w-full max-w-7xl space-y-8">
+    <main className="flex w-full flex-1 flex-col gap-6 px-4 py-6 sm:gap-8 sm:px-6 lg:px-10 xl:px-12">
+      <div className="mx-auto w-full max-w-7xl space-y-6 sm:space-y-8">
         {/* Header */}
         <div className="space-y-2">
           <div className="flex justify-between items-center">

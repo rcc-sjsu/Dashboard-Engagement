@@ -28,7 +28,7 @@ export default function Exports({
       {
         isAdmin && (
           <>
-          <ExportImage targetId="dashboard-export" />
+          <ExportImage />
           <ExportCSV />
           </>
         )
