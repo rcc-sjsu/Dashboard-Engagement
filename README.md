@@ -243,7 +243,7 @@ python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 Edit `apps/web/.env` as needed:
 
 ```bash
-NEXT_PUBLIC_SERVER_URL=http://localhost:8000
+SERVER_URL=http://localhost:8000
 ```
 
 Shared env schemas live in `packages/env/src/*.ts`.

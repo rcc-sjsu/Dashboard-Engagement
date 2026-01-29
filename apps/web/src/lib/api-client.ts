@@ -1,8 +1,8 @@
 const normalizeBaseUrl = (url: string) => url.replace(/\/+$/, "");
 
 export const getBaseUrl = () => {
-  if (process.env.NEXT_PUBLIC_SERVER_URL) {
-    return normalizeBaseUrl(process.env.NEXT_PUBLIC_SERVER_URL);
+  if (process.env.SERVER_URL) {
+    return normalizeBaseUrl(process.env.SERVER_URL);
   }
   if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
   if (process.env.NODE_ENV === "development") return "http://localhost:8000";

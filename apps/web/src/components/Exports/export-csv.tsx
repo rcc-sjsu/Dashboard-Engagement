@@ -114,7 +114,7 @@ const ExportCSV = () => {
 
     const exportPromise = (async () => {
       setStatus("exporting");
-      const serverUrl = process.env.NEXT_PUBLIC_SERVER_URL;
+      const serverUrl = process.env.SERVER_URL;
       if (!serverUrl) {
         throw new Error("Server URL is not configured.");
       }

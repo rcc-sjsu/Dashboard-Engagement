@@ -8,7 +8,7 @@ interface RetentionData {
 
 export const fetchRetentionData = async (): Promise<RetentionData> => {
   try {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/analytics/retention`, {
+    const response = await fetch(`${process.env.SERVER_URL}/analytics/retention`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
