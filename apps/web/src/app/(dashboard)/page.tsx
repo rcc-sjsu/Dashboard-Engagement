@@ -4,6 +4,42 @@ import { ChartLineMultiple } from "@/components/ui/line-graph";
 import { BigNumber } from "@/components/ui/kpi";
 import { RetentionDistributionChart } from "@/components/ui/retention/retention-distribution";
 import { MissionSection } from "@/components/ui/mission/MissionSection";
+import { authenticatedServerFetch } from "@/lib/api-client";
+
+// Type definitions for API responses
+interface AnalyticsOverview {
+  overview?: {
+    kpis?: Record<string, any>;
+    members_over_time?: Array<{
+      period: string;
+      registered_members_cumulative: number;
+      active_members_cumulative: number;
+    }>;
+  };
+  meta?: {
+    start?: string;
+    end?: string;
+  };
+}
+
+interface MissionResponse {
+  mission?: {
+    major_category_distribution?: Array<any>;
+    class_year_distribution?: Array<any>;
+    event_major_category_percent?: Array<any>;
+  };
+  major_category_distribution?: Array<any>;
+  class_year_distribution?: Array<any>;
+  event_major_category_percent?: Array<any>;
+  [key: string]: any;
+}
+
+interface RetentionResponse {
+  retention?: {
+    retention?: Record<string, any>;
+  };
+  [key: string]: any;
+}
 
 export default async function Page() {
   const supabase = await createClient();
@@ -15,45 +51,23 @@ export default async function Page() {
     return redirect("/signin");
   }
 
-  const base = process.env.NEXT_PUBLIC_SERVER_URL;
-  if (!base) {
-    throw new Error("NEXT_PUBLIC_SERVER_URL is not set");
-  }
+  // Fetch overview analytics with API key header
+  const json = await authenticatedServerFetch<AnalyticsOverview>("/analytics/overview");
 
-  // Fetch overview analytics
-  const res = await fetch(`${base}/analytics/overview`, { cache: "no-store" });
+  // Fetch mission analytics with API key header
+  const missionJson = await authenticatedServerFetch<MissionResponse>("/analytics/mission");
+  const mission = {
+    major_category_distribution: missionJson?.mission?.major_category_distribution ?? missionJson?.major_category_distribution ?? [],
+    class_year_distribution: missionJson?.mission?.class_year_distribution ?? missionJson?.class_year_distribution ?? [],
+    event_major_category_percent: missionJson?.mission?.event_major_category_percent ?? missionJson?.event_major_category_percent ?? [],
+  };
 
-  if (!res.ok) {
-    throw new Error(`Overview fetch failed: ${res.status}`);
-  }
-
-  const json = await res.json();
-
-  // Fetch mission analytics
-  const missionRes = await fetch(`${base}/analytics/mission`, { cache: "no-store" });
-
-  if (!missionRes.ok) {
-    throw new Error(`Mission fetch failed: ${res.status}`);
-  }
-
-  const missionJson = await missionRes.json();
-  const mission = missionJson?.mission ?? missionJson;
-
-  // --- RETENTION (added; rest of file unchanged) ---
-  const retentionRes = await fetch(`${base}/analytics/retention`, {
-    cache: "no-store",
-  });
-
-  if (!retentionRes.ok) {
-    throw new Error(`Retention fetch failed: ${retentionRes.status}`);
-  }
-
-  const retentionJson = await retentionRes.json();
+  // Fetch retention analytics with API key header
+  const retentionJson = await authenticatedServerFetch<RetentionResponse>("/analytics/retention");
   const retention =
     retentionJson?.retention?.retention ??
     retentionJson?.retention ??
     retentionJson;
-  // --- end retention add ---
 
   const kpis = json?.overview?.kpis ?? {};
   const membersOverTime = json?.overview?.members_over_time ?? [];
