@@ -1,7 +1,9 @@
 import { createClient } from "@repo/supabase/server";
 import { redirect } from "next/navigation";
+import { Suspense } from "react";
 import AdminImportPanel from "@/components/admin/AdminImportPanel";
 import { getUserRole } from "@/lib/actions";
+import { AdminImportPanelSkeleton } from "@/components/dashboard/skeletons";
 
 /**
  * Admin-only page for importing data into the dashboard
@@ -33,7 +35,9 @@ export default async function AdminPage() {
   return (
     <main className="flex w-full flex-1 flex-col gap-6 px-4 py-6 sm:px-6 lg:px-10 xl:px-12">
       <div className="mx-auto w-full max-w-5xl space-y-6">
-        <AdminImportPanel />
+        <Suspense fallback={<AdminImportPanelSkeleton />}>
+          <AdminImportPanel />
+        </Suspense>
       </div>
     </main>
   );

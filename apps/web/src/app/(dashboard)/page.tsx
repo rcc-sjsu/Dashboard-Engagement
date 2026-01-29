@@ -1,10 +1,17 @@
 import { createClient } from "@repo/supabase/server";
 import { redirect } from "next/navigation";
+import { Suspense } from "react";
 import { ChartLineMultiple } from "@/components/ui/line-graph";
 import { BigNumber } from "@/components/ui/kpi";
 import { RetentionDistributionChart } from "@/components/ui/retention/retention-distribution";
 import { MissionSection } from "@/components/ui/mission/MissionSection";
 import { authenticatedServerFetch } from "@/lib/api-client";
+import {
+  KPICardsSkeleton,
+  ChartSkeleton,
+  MissionSectionSkeleton,
+  RetentionChartSkeleton,
+} from "@/components/dashboard/skeletons";
 
 // Type definitions for API responses
 interface AnalyticsOverview {
@@ -51,33 +58,6 @@ export default async function Page() {
     return redirect("/signin");
   }
 
-  // Fetch overview analytics with API key header
-  const json = await authenticatedServerFetch<AnalyticsOverview>("/analytics/overview");
-
-  // Fetch mission analytics with API key header
-  const missionJson = await authenticatedServerFetch<MissionResponse>("/analytics/mission");
-  const mission = {
-    major_category_distribution: missionJson?.mission?.major_category_distribution ?? missionJson?.major_category_distribution ?? [],
-    class_year_distribution: missionJson?.mission?.class_year_distribution ?? missionJson?.class_year_distribution ?? [],
-    event_major_category_percent: missionJson?.mission?.event_major_category_percent ?? missionJson?.event_major_category_percent ?? [],
-  };
-
-  // Fetch retention analytics with API key header
-  const retentionJson = await authenticatedServerFetch<RetentionResponse>("/analytics/retention");
-  const retention =
-    retentionJson?.retention?.retention ??
-    retentionJson?.retention ??
-    retentionJson;
-
-  const kpis = json?.overview?.kpis ?? {};
-  const membersOverTime = json?.overview?.members_over_time ?? [];
-
-  const activePctRaw = kpis.active_member_pct ?? kpis.active_members_pct ?? 0;
-  const activePct = activePctRaw <= 1 ? activePctRaw * 100 : activePctRaw;
-
-  const growthRaw = kpis.registered_growth_last_30d_pct ?? 0;
-  const growthPct = growthRaw <= 1 ? growthRaw * 100 : growthRaw;
-
   return (
     <main className="flex w-full flex-1 flex-col gap-6 px-4 py-6 sm:gap-8 sm:px-6 lg:px-10 xl:px-12">
       <div className="mx-auto w-full max-w-7xl space-y-6 sm:space-y-8">
@@ -94,65 +74,123 @@ export default async function Page() {
         </div>
 
         {/* KPI CARDS */}
-        <div className="flex flex-col gap-8">
-          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-            <BigNumber
-              title="Total Members"
-              date="All time"
-              value={kpis.total_members ?? 0}
-              trending={false}
-            />
+        <Suspense fallback={<KPICardsSkeleton />}>
+          <KPICardsSection />
+        </Suspense>
 
-            <BigNumber
-              title="Active Members"
-              date="All time"
-              value={kpis.active_members ?? 0}
-              trending={false}
-            />
+        {/* LINE CHART */}
+        <Suspense fallback={<ChartSkeleton />}>
+          <OverviewChartSection />
+        </Suspense>
 
-            <BigNumber
-              title="Active %"
-              date="All time"
-              value={`${activePct.toFixed(1)}%`}
-              trending={true}
-              trendText={`Growth (30d): ${growthPct.toFixed(1)}%`}
-              trendUp={growthPct >= 0}
-            />
+        {/* MISSION SECTION */}
+        <Suspense fallback={<MissionSectionSkeleton />}>
+          <MissionSectionWrapper />
+        </Suspense>
 
-            <BigNumber
-              title="Registered Growth"
-              date="Last 30 days"
-              value={`${growthPct.toFixed(1)}%`}
-              trending={true}
-              trendText="vs previous 30 days"
-              trendUp={growthPct >= 0}
-            />
-          </div>
-
-          {/* LINE CHART */}
-          <div className="min-w-0">
-            <ChartLineMultiple
-              dateRangeLabel={`${json?.meta?.start ?? ""} - ${
-                json?.meta?.end ?? ""
-              }`}
-              data={membersOverTime.map((d: any) => ({
-                month: d.period,
-                registered: d.registered_members_cumulative,
-                active: d.active_members_cumulative,
-              }))}
-            />
-          </div>
-
-          <div className="min-w-0">
-            <MissionSection data={mission} />
-          </div>
-
-          {/* RETENTION */}
-          <div className="min-w-0">
-            <RetentionDistributionChart data={retention} />
-          </div>
-        </div>
+        {/* RETENTION SECTION */}
+        <Suspense fallback={<RetentionChartSkeleton />}>
+          <RetentionChartSection />
+        </Suspense>
       </div>
     </main>
+  );
+}
+
+async function KPICardsSection() {
+  const json = await authenticatedServerFetch<AnalyticsOverview>("/analytics/overview");
+  const kpis = json?.overview?.kpis ?? {};
+
+  const activePctRaw = kpis.active_member_pct ?? kpis.active_members_pct ?? 0;
+  const activePct = activePctRaw <= 1 ? activePctRaw * 100 : activePctRaw;
+
+  const growthRaw = kpis.registered_growth_last_30d_pct ?? 0;
+  const growthPct = growthRaw <= 1 ? growthRaw * 100 : growthRaw;
+
+  return (
+    <div className="flex flex-col gap-8">
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <BigNumber
+          title="Total Members"
+          date="All time"
+          value={kpis.total_members ?? 0}
+          trending={false}
+        />
+
+        <BigNumber
+          title="Active Members"
+          date="All time"
+          value={kpis.active_members ?? 0}
+          trending={false}
+        />
+
+        <BigNumber
+          title="Active %"
+          date="All time"
+          value={`${activePct.toFixed(1)}%`}
+          trending={true}
+          trendText={`Growth (30d): ${growthPct.toFixed(1)}%`}
+          trendUp={growthPct >= 0}
+        />
+
+        <BigNumber
+          title="Registered Growth"
+          date="Last 30 days"
+          value={`${growthPct.toFixed(1)}%`}
+          trending={true}
+          trendText="vs previous 30 days"
+          trendUp={growthPct >= 0}
+        />
+      </div>
+    </div>
+  );
+}
+
+async function OverviewChartSection() {
+  const json = await authenticatedServerFetch<AnalyticsOverview>("/analytics/overview");
+  const membersOverTime = json?.overview?.members_over_time ?? [];
+
+  return (
+    <div className="min-w-0">
+      <ChartLineMultiple
+        dateRangeLabel={`${json?.meta?.start ?? ""} - ${
+          json?.meta?.end ?? ""
+        }`}
+        data={membersOverTime.map((d: any) => ({
+          month: d.period,
+          registered: d.registered_members_cumulative,
+          active: d.active_members_cumulative,
+        }))}
+      />
+    </div>
+  );
+}
+
+async function MissionSectionWrapper() {
+  const missionJson = await authenticatedServerFetch<MissionResponse>("/analytics/mission");
+  const mission = {
+    major_category_distribution: missionJson?.mission?.major_category_distribution ?? missionJson?.major_category_distribution ?? [],
+    class_year_distribution: missionJson?.mission?.class_year_distribution ?? missionJson?.class_year_distribution ?? [],
+    event_major_category_percent: missionJson?.mission?.event_major_category_percent ?? missionJson?.event_major_category_percent ?? [],
+  };
+
+  return (
+    <div className="min-w-0">
+      <MissionSection data={mission} />
+    </div>
+  );
+}
+
+async function RetentionChartSection() {
+  const retentionJson = await authenticatedServerFetch<RetentionResponse>("/analytics/retention");
+  const retention =
+    retentionJson?.retention?.retention ??
+    retentionJson?.retention ??
+    retentionJson;
+
+  return (
+    <div className="min-w-0">
+      <RetentionDistributionChart data={retention} />
+    </div>
   );
 }

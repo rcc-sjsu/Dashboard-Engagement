@@ -1,10 +1,11 @@
 import { redirect } from "next/navigation";
+import { Suspense } from "react";
 import UsersTable from "./users-table"
 import { getAllUsers, getUserRole } from "@/lib/actions"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { UsersTableSkeleton } from "@/components/dashboard/skeletons";
 
 export default async function UsersPage() {
-  const users = await getAllUsers()
   const result = await getUserRole();
   
   if(!result) {
@@ -32,20 +33,39 @@ export default async function UsersPage() {
               Manage access, roles, and visibility for your dashboard.
             </p>
           </div>
-          <div className="inline-flex items-center gap-2 rounded-full border border-border/60 bg-muted px-3 py-1 text-xs font-medium text-muted-foreground">
+          <Suspense fallback={<div className="inline-flex items-center gap-2 rounded-full border border-border/60 bg-muted px-3 py-1 text-xs font-medium text-muted-foreground">
             <span className="h-2 w-2 rounded-full bg-emerald-400" />
-            {users.length} total users
-          </div>
+            Loading...
+          </div>}>
+            <UserCount />
+          </Suspense>
         </div>
         <Card>
           <CardHeader className="pb-0">
             <CardTitle className="text-base sm:text-lg">Directory</CardTitle>
           </CardHeader>
           <CardContent className="pt-4">
-            <UsersTable data={users} id={data.id} />
+            <Suspense fallback={<UsersTableSkeleton />}>
+              <UsersTableWrapper userId={data.id} />
+            </Suspense>
           </CardContent>
         </Card>
       </div>
     </main>
   )
+}
+
+async function UserCount() {
+  const users = await getAllUsers()
+  return (
+    <div className="inline-flex items-center gap-2 rounded-full border border-border/60 bg-muted px-3 py-1 text-xs font-medium text-muted-foreground">
+      <span className="h-2 w-2 rounded-full bg-emerald-400" />
+      {users.length} total users
+    </div>
+  )
+}
+
+async function UsersTableWrapper({ userId }: { userId: string }) {
+  const users = await getAllUsers()
+  return <UsersTable data={users} id={userId} />
 }
