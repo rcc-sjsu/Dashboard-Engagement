@@ -98,99 +98,119 @@ export default async function Page() {
 }
 
 async function KPICardsSection() {
-  const json = await authenticatedServerFetch<AnalyticsOverview>("/analytics/overview");
-  const kpis = json?.overview?.kpis ?? {};
+  try {
+    const json = await authenticatedServerFetch<AnalyticsOverview>("/analytics/overview");
+    const kpis = json?.overview?.kpis ?? {};
 
-  const activePctRaw = kpis.active_member_pct ?? kpis.active_members_pct ?? 0;
-  const activePct = activePctRaw <= 1 ? activePctRaw * 100 : activePctRaw;
+    const activePctRaw = kpis.active_member_pct ?? kpis.active_members_pct ?? 0;
+    const activePct = activePctRaw <= 1 ? activePctRaw * 100 : activePctRaw;
 
-  const growthRaw = kpis.registered_growth_last_30d_pct ?? 0;
-  const growthPct = growthRaw <= 1 ? growthRaw * 100 : growthRaw;
+    const growthRaw = kpis.registered_growth_last_30d_pct ?? 0;
+    const growthPct = growthRaw <= 1 ? growthRaw * 100 : growthRaw;
 
-  return (
-    <div className="flex flex-col gap-8">
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <BigNumber
-          title="Total Members"
-          date="All time"
-          value={kpis.total_members ?? 0}
-          trending={false}
-        />
+    return (
+      <div className="flex flex-col gap-8">
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <BigNumber
+            title="Total Members"
+            date="All time"
+            value={kpis.total_members ?? 0}
+            trending={false}
+          />
 
-        <BigNumber
-          title="Active Members"
-          date="All time"
-          value={kpis.active_members ?? 0}
-          trending={false}
-        />
+          <BigNumber
+            title="Active Members"
+            date="All time"
+            value={kpis.active_members ?? 0}
+            trending={false}
+          />
 
-        <BigNumber
-          title="Active %"
-          date="All time"
-          value={`${activePct.toFixed(1)}%`}
-          trending={true}
-          trendText={`Growth (30d): ${growthPct.toFixed(1)}%`}
-          trendUp={growthPct >= 0}
-        />
+          <BigNumber
+            title="Active %"
+            date="All time"
+            value={`${activePct.toFixed(1)}%`}
+            trending={true}
+            trendText={`Growth (30d): ${growthPct.toFixed(1)}%`}
+            trendUp={growthPct >= 0}
+          />
 
-        <BigNumber
-          title="Registered Growth"
-          date="Last 30 days"
-          value={`${growthPct.toFixed(1)}%`}
-          trending={true}
-          trendText="vs previous 30 days"
-          trendUp={growthPct >= 0}
-        />
+          <BigNumber
+            title="Registered Growth"
+            date="Last 30 days"
+            value={`${growthPct.toFixed(1)}%`}
+            trending={true}
+            trendText="vs previous 30 days"
+            trendUp={growthPct >= 0}
+          />
+        </div>
       </div>
-    </div>
-  );
+    );
+  } catch (error) {
+    console.error("KPI Cards error:", error);
+    throw new Error(`Failed to load KPI cards: ${error instanceof Error ? error.message : "Unknown error"}`);
+  }
 }
 
 async function OverviewChartSection() {
-  const json = await authenticatedServerFetch<AnalyticsOverview>("/analytics/overview");
-  const membersOverTime = json?.overview?.members_over_time ?? [];
+  try {
+    const json = await authenticatedServerFetch<AnalyticsOverview>("/analytics/overview");
+    const membersOverTime = json?.overview?.members_over_time ?? [];
 
-  return (
-    <div className="min-w-0">
-      <ChartLineMultiple
-        dateRangeLabel={`${json?.meta?.start ?? ""} - ${
-          json?.meta?.end ?? ""
-        }`}
-        data={membersOverTime.map((d: any) => ({
-          month: d.period,
-          registered: d.registered_members_cumulative,
-          active: d.active_members_cumulative,
-        }))}
-      />
-    </div>
-  );
+    return (
+      <div className="min-w-0">
+        <ChartLineMultiple
+          dateRangeLabel={`${json?.meta?.start ?? ""} - ${
+            json?.meta?.end ?? ""
+          }`}
+          data={membersOverTime.map((d: any) => ({
+            month: d.period,
+            registered: d.registered_members_cumulative,
+            active: d.active_members_cumulative,
+          }))}
+        />
+      </div>
+    );
+  } catch (error) {
+    console.error("Chart error:", error);
+    throw new Error(`Failed to load chart: ${error instanceof Error ? error.message : "Unknown error"}`);
+  }
 }
 
 async function MissionSectionWrapper() {
-  const missionJson = await authenticatedServerFetch<MissionResponse>("/analytics/mission");
-  const mission = {
-    major_category_distribution: missionJson?.mission?.major_category_distribution ?? missionJson?.major_category_distribution ?? [],
-    class_year_distribution: missionJson?.mission?.class_year_distribution ?? missionJson?.class_year_distribution ?? [],
-    event_major_category_percent: missionJson?.mission?.event_major_category_percent ?? missionJson?.event_major_category_percent ?? [],
-  };
+  try {
+    const missionJson = await authenticatedServerFetch<MissionResponse>("/analytics/mission");
+    const mission = {
+      major_category_distribution: missionJson?.mission?.major_category_distribution ?? missionJson?.major_category_distribution ?? [],
+      class_year_distribution: missionJson?.mission?.class_year_distribution ?? missionJson?.class_year_distribution ?? [],
+      event_major_category_percent: missionJson?.mission?.event_major_category_percent ?? missionJson?.event_major_category_percent ?? [],
+    };
 
-  return (
-    <div className="min-w-0">
-      <MissionSection data={mission} />
-    </div>
-  );
+    return (
+      <div className="min-w-0">
+        <MissionSection data={mission} />
+      </div>
+    );
+  } catch (error) {
+    console.error("Mission section error:", error);
+    throw new Error(`Failed to load mission data: ${error instanceof Error ? error.message : "Unknown error"}`);
+  }
 }
 
 async function RetentionChartSection() {
-  const retentionJson = await authenticatedServerFetch<RetentionResponse>("/analytics/retention");
-  const retention =
-    retentionJson?.retention?.retention ??
-    retentionJson?.retention ??
-    retentionJson;
+  try {
+    const retentionJson = await authenticatedServerFetch<RetentionResponse>("/analytics/retention");
+    const retention =
+      retentionJson?.retention?.retention ??
+      retentionJson?.retention ??
+      retentionJson;
 
-  return (
-    <div className="min-w-0">
-      <RetentionDistributionChart data={retention} />
-    </div>
-  );
+    return (
+      <div className="min-w-0">
+        <RetentionDistributionChart data={retention} />
+      </div>
+    );
+  } catch (error) {
+    console.error("Retention chart error:", error);
+    throw new Error(`Failed to load retention data: ${error instanceof Error ? error.message : "Unknown error"}`);
+  }
 }

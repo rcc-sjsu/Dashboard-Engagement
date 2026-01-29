@@ -31,6 +31,8 @@ export async function authenticatedServerFetch<T>(
   const headers = new Headers(options?.headers || {});
   headers.set("Authorization", `Bearer ${apiKey}`);
 
+  console.log(`[API Client] Fetching: ${url}`);
+
   const response = await fetch(url, {
     ...options,
     headers,
@@ -38,11 +40,12 @@ export async function authenticatedServerFetch<T>(
   });
 
   if (response.status === 401) {
-    throw new Error("Unauthorized: Invalid API key");
+    throw new Error(`Unauthorized (401): Invalid API key for endpoint ${endpoint}`);
   }
 
   if (!response.ok) {
-    throw new Error(`Request failed: ${response.status} ${response.statusText}`);
+    const responseText = await response.text();
+    throw new Error(`Request failed (${response.status}): ${endpoint} - ${responseText}`);
   }
 
   return response.json();
