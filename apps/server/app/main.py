@@ -33,7 +33,7 @@ app.include_router(analytics_router)
 # Configure CORS middleware for cross-origin requests
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[os.getenv("CORS_ORIGIN", "*")],
+    allow_origins=[os.getenv("CORS_ORIGIN")],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
