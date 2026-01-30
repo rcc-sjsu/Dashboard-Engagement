@@ -1,15 +1,6 @@
 {
   "$schema": "https://turbo.build/schema.json",
   "ui": "tui",
-  "platform": {
-    "vercel": {
-      "env": [
-        "SERVER_URL",
-        "SUPABASE_SERVICE_ROLE_KEY",
-        "SERVER_INTERNAL_API_SECRET"
-      ]
-    }
-  },
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
