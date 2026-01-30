@@ -2,6 +2,7 @@
 import { useState } from "react";
 import Papa from "papaparse";
 import { Button } from "@/components/ui/button";
+import { authenticatedFetch } from "@/lib/api-client";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -114,10 +115,6 @@ const ExportCSV = () => {
 
     const exportPromise = (async () => {
       setStatus("exporting");
-      const serverUrl = process.env.SERVER_URL;
-      if (!serverUrl) {
-        throw new Error("Server URL is not configured.");
-      }
 
       // Get current date for filename
       const date = new Date().toISOString().split("T")[0];
@@ -127,7 +124,9 @@ const ExportCSV = () => {
         const endpoints = ["overview", "retention", "mission"];
         
         for (const endpoint of endpoints) {
-          const response = await fetch(`${serverUrl}/analytics/${endpoint}`);
+          const response = await authenticatedFetch(`/analytics/${endpoint}`, {
+            method: "GET",
+          });
           
           if (!response.ok) {
             throw new Error(`Failed to fetch ${endpoint}: ${response.statusText}`);
@@ -142,7 +141,9 @@ const ExportCSV = () => {
         return "Successfully exported 7 CSV files";
       } else {
         // Fetch single endpoint
-        const response = await fetch(`${serverUrl}/analytics/${option}`);
+        const response = await authenticatedFetch(`/analytics/${option}`, {
+          method: "GET",
+        });
         
         if (!response.ok) {
           throw new Error(`Failed to fetch: ${response.statusText}`);

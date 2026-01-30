@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Papa from "papaparse";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
+import { authenticatedFetch } from "@/lib/api-client";
 import { DropdownMenuDemo } from "@/components/ui/drop-down";
 import type { ImportType } from "@/components/ui/drop-down";
 import UploadArea from "@/components/ui/csvupload";
@@ -518,7 +519,7 @@ export default function AdminImportPanel() {
       form.append("file", fileToUpload);
 
       const importPromise = (async () => {
-        const res = await fetch(`${serverUrl}/api/import/event-attendance`, {
+        const res = await authenticatedFetch(`/api/import/event-attendance`, {
           method: "POST",
           body: form,
         });

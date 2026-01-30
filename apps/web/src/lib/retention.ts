@@ -1,9 +1,5 @@
 import { authenticatedFetch } from "./api-client";
 
-/**
- * Fetches retention analytics data from FastAPI backend
- */
-
 interface RetentionData {
   retention: any;
 }
