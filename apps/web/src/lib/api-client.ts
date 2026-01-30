@@ -4,16 +4,23 @@ export const getBaseUrl = () => {
   if (process.env.SERVER_URL) {
     return normalizeBaseUrl(process.env.SERVER_URL);
   }
+  if (process.env.NEXT_PUBLIC_SERVER_URL) {
+    return normalizeBaseUrl(process.env.NEXT_PUBLIC_SERVER_URL);
+  }
   if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
   if (process.env.NODE_ENV === "development") return "http://localhost:8000";
   return "https://api.dashboard.example.com";
 };
 
 const getApiKey = () => {
-  const key = process.env.NEXT_PUBLIC_SERVER_INTERNAL_API_SECRET ||
-              process.env.SERVER_INTERNAL_API_SECRET;
+  const key =
+    process.env.INTERNAL_API_SECRET ||
+    process.env.SERVER_INTERNAL_API_SECRET ||
+    process.env.NEXT_PUBLIC_SERVER_INTERNAL_API_SECRET;
   if (!key) {
-    throw new Error("SERVER_INTERNAL_API_SECRET is not configured");
+    throw new Error(
+      "No API secret configured. Set INTERNAL_API_SECRET (preferred) or SERVER_INTERNAL_API_SECRET.",
+    );
   }
   return key;
 };
