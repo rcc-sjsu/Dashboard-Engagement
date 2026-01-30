@@ -1,3 +1,5 @@
+import { authenticatedFetch } from "./api-client";
+
 /**
  * Fetches retention analytics data from FastAPI backend
  */
@@ -8,11 +10,8 @@ interface RetentionData {
 
 export const fetchRetentionData = async (): Promise<RetentionData> => {
   try {
-    const response = await fetch(`${process.env.SERVER_URL}/analytics/retention`, {
+    const response = await authenticatedFetch("/analytics/retention", {
       method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
     });
 
     if (!response.ok) {
