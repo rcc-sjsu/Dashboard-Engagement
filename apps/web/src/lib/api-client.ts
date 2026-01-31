@@ -14,9 +14,7 @@ export const getBaseUrl = () => {
 
 const getApiKey = () => {
   const key =
-    process.env.INTERNAL_API_SECRET ||
-    process.env.SERVER_INTERNAL_API_SECRET ||
-    process.env.NEXT_PUBLIC_SERVER_INTERNAL_API_SECRET;
+    process.env.SERVER_INTERNAL_API_SECRET
   if (!key) {
     throw new Error(
       "No API secret configured. Set INTERNAL_API_SECRET (preferred) or SERVER_INTERNAL_API_SECRET.",
