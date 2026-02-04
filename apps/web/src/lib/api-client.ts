@@ -32,7 +32,11 @@ export async function authenticatedServerFetch<T>(
   endpoint: string,
   options?: RequestInit,
 ): Promise<T> {
-  const url = `${getBaseUrl()}${endpoint}`;
+  // Normalize endpoint: strip /api/analytics prefix for server-side direct calls
+  const normalizedEndpoint = endpoint.startsWith("/api/analytics")
+    ? endpoint.replace("/api/analytics", "/analytics")
+    : endpoint;
+  const url = `${getBaseUrl()}${normalizedEndpoint}`;
   const apiKey = getApiKey();
   const headers = new Headers(options?.headers || {});
   headers.set("Authorization", `Bearer ${apiKey}`);
