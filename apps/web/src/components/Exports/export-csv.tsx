@@ -3,6 +3,7 @@ import { useState } from "react";
 import Papa from "papaparse";
 import { Button } from "@/components/ui/button";
 import { authenticatedFetch } from "@/lib/api-client";
+import ChevronDown from "@/components/Icons/ChevronDown";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -181,8 +182,10 @@ const ExportCSV = () => {
         <Button 
           disabled={isLoading}
           variant="outline"
+          className="group"
         >
           {isLoading ? "Exporting..." : "Export CSV"}
+          <ChevronDown className="ml-2 size-4 stroke-current transition-transform group-data-[state=open]:rotate-180" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="center" >

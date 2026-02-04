@@ -102,14 +102,16 @@ export function MissionSection({ data }: { data: MissionData }) {
                             <CardTitle>{showMajor ? "Members by Major Category" : "Members by Class Year"}</CardTitle>
                         </CardHeader>
 
-                        <div className="flex justify-center px-6 pb-2">
-                            <ToggleBar
-                                options={[
-                                    { label: "Major", value: "major" },
-                                    { label: "Year", value: "year" },
-                                ]}
-                                onChange={(v) => setShowMajor(v === "major")}
-                            />
+                        <div className="flex justify-center ">
+                            <div className="rounded-full border border-muted-foreground/20 bg-muted/60">
+                                <ToggleBar
+                                    options={[
+                                        { label: "Major", value: "major" },
+                                        { label: "Year", value: "year" },
+                                    ]}
+                                    onChange={(v) => setShowMajor(v === "major")}
+                                />
+                            </div>
                         </div>
 
                         {showMajor ? (

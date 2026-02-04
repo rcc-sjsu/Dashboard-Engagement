@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import { motion } from 'motion/react';
 
 type ToggleOption = {
@@ -19,6 +19,7 @@ export default function ToggleBar({
   value,
   onChange,
 }: ToggleBarProps) {
+  const layoutId = useId();
   const [internalValue, setInternalValue] = useState(
     value ?? options[0].value
   );
@@ -43,7 +44,7 @@ export default function ToggleBar({
           >
             {isActive && (
               <motion.div
-                layoutId="toggle-indicator"
+                layoutId={`toggle-indicator-${layoutId}`}
                 transition={{
                   type: 'spring',
                   stiffness: 400,

@@ -4,6 +4,7 @@ import { toPng } from "html-to-image"
 import jsPDF from "jspdf"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
+import ChevronDown from "@/components/Icons/ChevronDown"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -276,9 +277,10 @@ export default function ExportImage() {
           variant="outline"
           size="sm"
           disabled={isExporting}
-          className="w-full sm:w-auto"
+          className="group w-full sm:w-auto"
         >
           {isExporting ? "Exporting..." : "Export Dashboard"}
+          <ChevronDown className="ml-2 size-4 stroke-current transition-transform group-data-[state=open]:rotate-180" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
