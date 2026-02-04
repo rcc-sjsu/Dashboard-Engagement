@@ -5,6 +5,9 @@ import jsPDF from "jspdf"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import ChevronDown from "@/components/Icons/ChevronDown"
+import ImageIcon from "@/components/Icons/ImageIcon"
+import FileDownloadIcon from "@/components/Icons/FileDownloadIcon"
+import DownloadIcon from "@/components/Icons/DownloadIcon"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -292,8 +295,11 @@ export default function ExportImage() {
             void handleExport("pdf")
           }}
           disabled={isExporting}
+          className="group"
         >
+          <FileDownloadIcon className="size-4 text-muted-foreground" />
           PDF
+          <DownloadIcon className="ml-auto size-4 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100" />
         </DropdownMenuItem>
         <DropdownMenuItem
           onSelect={(event) => {
@@ -301,8 +307,11 @@ export default function ExportImage() {
             void handleExport("png")
           }}
           disabled={isExporting}
+          className="group"
         >
+          <ImageIcon className="size-4 text-muted-foreground" />
           PNG
+          <DownloadIcon className="ml-auto size-4 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100" />
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

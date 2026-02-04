@@ -4,6 +4,11 @@ import Papa from "papaparse";
 import { Button } from "@/components/ui/button";
 import { authenticatedFetch } from "@/lib/api-client";
 import ChevronDown from "@/components/Icons/ChevronDown";
+import OverviewIcon from "@/components/Icons/OverviewIcon";
+import Users from "@/components/Icons/Users";
+import TargetIcon from "@/components/Icons/TargetIcon";
+import FileDownloadIcon from "@/components/Icons/FileDownloadIcon";
+import DownloadIcon from "@/components/Icons/DownloadIcon";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -196,8 +201,22 @@ const ExportCSV = () => {
             key={opt.value}
             onSelect={() => handleExport(opt.value)}
             disabled={isLoading}
-            >
+            className="group"
+          >
+            {opt.value === "overview" && (
+              <OverviewIcon className="size-4 text-muted-foreground" />
+            )}
+            {opt.value === "retention" && (
+              <Users className="size-4 text-muted-foreground" />
+            )}
+            {opt.value === "mission" && (
+              <TargetIcon className="size-4 text-muted-foreground" />
+            )}
+            {opt.value === "all" && (
+              <FileDownloadIcon className="size-4 text-muted-foreground" />
+            )}
             {opt.label}
+            <DownloadIcon className="ml-auto size-4 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100" />
           </DropdownMenuItem>
         ))}
       </DropdownMenuContent>

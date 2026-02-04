@@ -6,13 +6,17 @@ type Props = React.SVGProps<SVGSVGElement>
 
 const Users = ({ className, ...props }: Props) => {
   const frontHeadClasses =
-    "transition-transform duration-300 ease-out [transform-box:fill-box] [transform-origin:center] will-change-transform scale-[1.04] group-hover/menu-item:scale-[0.96] group-hover/menu-item:-translate-y-0.5"
-  const backHeadClasses =
-    "transition-transform duration-300 ease-out delay-75 [transform-box:fill-box] [transform-origin:center] will-change-transform scale-[0.96] group-hover/menu-item:scale-[1.04] group-hover/menu-item:-translate-y-0.25"
+    "transition-transform duration-300 ease-out [transform-box:fill-box] [transform-origin:center] will-change-transform scale-[1.02] group-hover/menu-item:scale-[1.08] group-hover/users:scale-[1.08]"
+  const backHeadRightClasses =
+    "transition-transform duration-300 ease-out delay-75 [transform-box:fill-box] [transform-origin:center] will-change-transform group-hover/menu-item:translate-x-0.75 group-hover/users:translate-x-0.75"
+  const backHeadLeftClasses =
+    "transition-transform duration-300 ease-out delay-75 [transform-box:fill-box] [transform-origin:center] will-change-transform group-hover/menu-item:-translate-x-0.75 group-hover/users:-translate-x-0.75"
   const frontBodyClasses =
-    "transition-transform duration-300 ease-out delay-100 [transform-box:fill-box] [transform-origin:center] will-change-transform scale-[1.03] group-hover/menu-item:scale-[0.97] group-hover/menu-item:translate-y-0.5"
-  const backBodyClasses =
-    "transition-transform duration-300 ease-out delay-150 [transform-box:fill-box] [transform-origin:center] will-change-transform scale-[0.97] group-hover/menu-item:scale-[1.03] group-hover/menu-item:translate-y-0.25"
+    "transition-transform duration-300 ease-out delay-100 [transform-box:fill-box] [transform-origin:center] will-change-transform scale-[1.01] group-hover/menu-item:scale-[1.06] group-hover/users:scale-[1.06]"
+  const backBodyRightClasses =
+    "transition-transform duration-300 ease-out delay-150 [transform-box:fill-box] [transform-origin:center] will-change-transform group-hover/menu-item:translate-x-1 group-hover/users:translate-x-1"
+  const backBodyLeftClasses =
+    "transition-transform duration-300 ease-out delay-150 [transform-box:fill-box] [transform-origin:center] will-change-transform group-hover/menu-item:-translate-x-1 group-hover/users:-translate-x-1"
 
   return (
     <svg
@@ -25,25 +29,23 @@ const Users = ({ className, ...props }: Props) => {
       strokeWidth={1.5}
       strokeLinecap="round"
       strokeLinejoin="round"
-      className={cn("shrink-0", className)}
+      className={cn("group/users shrink-0", className)}
       {...props}
     >
-      <path
-        className={frontHeadClasses}
-        d="M13 11C13 8.79086 11.2091 7 9 7C6.79086 7 5 8.79086 5 11C5 13.2091 6.79086 15 9 15C11.2091 15 13 13.2091 13 11Z"
-      />
-      <path
-        className={backHeadClasses}
-        d="M11.0386 7.55773C11.0131 7.37547 11 7.18927 11 7C11 4.79086 12.7909 3 15 3C17.2091 3 19 4.79086 19 7C19 9.20914 17.2091 11 15 11C14.2554 11 13.5584 10.7966 12.9614 10.4423"
-      />
-      <path
-        className={frontBodyClasses}
-        d="M15 21C15 17.6863 12.3137 15 9 15C5.68629 15 3 17.6863 3 21"
-      />
-      <path
-        className={backBodyClasses}
-        d="M21 17C21 13.6863 18.3137 11 15 11"
-      />
+    <path 
+      d="M15.5 11C15.5 9.067 13.933 7.5 12 7.5C10.067 7.5 8.5 9.067 8.5 11C8.5 12.933 10.067 14.5 12 14.5C13.933 14.5 15.5 12.933 15.5 11Z" />
+    <path 
+      className={backHeadRightClasses}
+    d="M15.4827 11.3499C15.8047 11.4475 16.1462 11.5 16.5 11.5C18.433 11.5 20 9.933 20 8C20 6.067 18.433 4.5 16.5 4.5C14.6851 4.5 13.1928 5.8814 13.0173 7.65013" />
+    <path 
+      d="M18.5 19.5C18.5 16.7386 16.0376 14.5 13 14.5C9.96243 14.5 7.5 16.7386 7.5 19.5" />
+    <path 
+      className={backBodyLeftClasses}
+    d="M10.9827 7.65013C10.8072 5.8814 9.31492 4.5 7.5 4.5C5.567 4.5 4 6.067 4 8C4 9.933 5.567 11.5 7.5 11.5C7.85381 11.5 8.19535 11.4475 8.51727 11.3499" />
+    <path 
+    d="M22 16.5C22 13.7386 19.5376 11.5 16.5 11.5" />
+    <path 
+    d="M7.5 11.5C4.46243 11.5 2 13.7386 2 16.5" />
     </svg>
   )
 }
