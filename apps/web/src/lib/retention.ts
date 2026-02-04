@@ -6,7 +6,7 @@ interface RetentionData {
 
 export const fetchRetentionData = async (): Promise<RetentionData> => {
   try {
-    const response = await authenticatedFetch("/analytics/retention", {
+    const response = await authenticatedFetch("/api/analytics/retention", {
       method: "GET",
     });
 

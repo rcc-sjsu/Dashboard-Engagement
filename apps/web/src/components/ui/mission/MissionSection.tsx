@@ -61,7 +61,7 @@ type MissionData = {
 };
 
 /**
- * MissionSection fetches /analytics/mission once and uses data for:
+ * MissionSection fetches /api/analytics/mission once and uses data for:
  * - Pie chart (Major vs Year toggle)
  * - Stacked event diversity chart
  */

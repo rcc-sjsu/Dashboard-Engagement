@@ -4,7 +4,7 @@ from app.services.retention import build_retention_payload
 from app.services.overview import build_overview_payload
 from app.services.mission import build_mission_payload
 
-router = APIRouter(prefix="/analytics", tags=["analytics"])
+router = APIRouter(prefix="/api/analytics", tags=["analytics"])
 
 @router.get("/retention")
 def retention():

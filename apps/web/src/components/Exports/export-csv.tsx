@@ -130,7 +130,7 @@ const ExportCSV = () => {
         const endpoints = ["overview", "retention", "mission"];
         
         for (const endpoint of endpoints) {
-          const response = await authenticatedFetch(`/analytics/${endpoint}`, {
+          const response = await authenticatedFetch(`/api/analytics/${endpoint}`, {
             method: "GET",
           });
           
@@ -147,7 +147,7 @@ const ExportCSV = () => {
         return "Successfully exported 7 CSV files";
       } else {
         // Fetch single endpoint
-        const response = await authenticatedFetch(`/analytics/${option}`, {
+        const response = await authenticatedFetch(`/api/analytics/${option}`, {
           method: "GET",
         });
         

@@ -99,7 +99,7 @@ export default async function Page() {
 
 async function KPICardsSection() {
   try {
-    const json = await authenticatedServerFetch<AnalyticsOverview>("/analytics/overview");
+    const json = await authenticatedServerFetch<AnalyticsOverview>("/api/analytics/overview");
     const kpis = json?.overview?.kpis ?? {};
 
     const activePctRaw = kpis.active_member_pct ?? kpis.active_members_pct ?? 0;
@@ -153,7 +153,7 @@ async function KPICardsSection() {
 
 async function OverviewChartSection() {
   try {
-    const json = await authenticatedServerFetch<AnalyticsOverview>("/analytics/overview");
+    const json = await authenticatedServerFetch<AnalyticsOverview>("/api/analytics/overview");
     const membersOverTime = json?.overview?.members_over_time ?? [];
 
     return (
@@ -178,7 +178,7 @@ async function OverviewChartSection() {
 
 async function MissionSectionWrapper() {
   try {
-    const missionJson = await authenticatedServerFetch<MissionResponse>("/analytics/mission");
+    const missionJson = await authenticatedServerFetch<MissionResponse>("/api/analytics/mission");
     const mission = {
       major_category_distribution: missionJson?.mission?.major_category_distribution ?? missionJson?.major_category_distribution ?? [],
       class_year_distribution: missionJson?.mission?.class_year_distribution ?? missionJson?.class_year_distribution ?? [],
@@ -198,7 +198,7 @@ async function MissionSectionWrapper() {
 
 async function RetentionChartSection() {
   try {
-    const retentionJson = await authenticatedServerFetch<RetentionResponse>("/analytics/retention");
+    const retentionJson = await authenticatedServerFetch<RetentionResponse>("/api/analytics/retention");
     const retention =
       retentionJson?.retention?.retention ??
       retentionJson?.retention ??
