@@ -11,9 +11,10 @@ export async function GET(request: Request) {
   if (code) {
     const supabase = await createClient();
     const { data, error } = await supabase.auth.exchangeCodeForSession(code);
-    if (!error) {
+    if (!error && data.user) {
       const user = data.user;
-      const email = user?.email ?? "";
+      const email = user.email?.toLowerCase();
+      
       if (!email) {
         await supabase.auth.signOut();
         return NextResponse.redirect(`${origin}/signin?error=not_authorized`);
@@ -27,7 +28,12 @@ export async function GET(request: Request) {
         .maybeSingle();
 
       if (profileError || !profile) {
+        console.warn(`Unauthorized login attempt: ${email}`);
+        // Sign out to clear cookies
         await supabase.auth.signOut();
+        // Delete the auth user record so they don't stay in auth.users
+        await adminClient.auth.admin.deleteUser(user.id);
+        
         return NextResponse.redirect(`${origin}/signin?error=not_authorized`);
       }
 
@@ -59,13 +65,12 @@ export async function GET(request: Request) {
         .eq("id", profile.id);
 
       if (updateError) {
-        console.log("Failed to update profile after OAuth sign-in:", updateError);
+        console.error("Failed to update profile after OAuth sign-in:", updateError);
       }
 
       const forwardedHost = request.headers.get("x-forwarded-host"); // original origin before load balancer
       const isLocalEnv = process.env.NODE_ENV === "development";
       if (isLocalEnv) {
-        // we can be sure that there is no load balancer in between, so no need to watch for X-Forwarded-Host
         return NextResponse.redirect(`${origin}${next}`);
       } else if (forwardedHost) {
         return NextResponse.redirect(`https://${forwardedHost}${next}`);
@@ -78,3 +83,4 @@ export async function GET(request: Request) {
   // return the user to an error page with instructions
   return NextResponse.redirect(`${origin}/auth/auth-code-error`);
 }
+
