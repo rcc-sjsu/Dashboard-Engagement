@@ -66,12 +66,16 @@ export async function authenticatedFetch(
   options?: RequestInit,
 ): Promise<Response> {
   const apiKey = getApiKey();
+  const isAbsolute = /^https?:\/\//i.test(url);
+  const isLocalNextApiRoute = url.startsWith("/api/");
+  const requestUrl =
+    isAbsolute || isLocalNextApiRoute ? url : `${getBaseUrl()}${url}`;
 
   // Add authorization header to requests
   const headers = new Headers(options?.headers || {});
   headers.set("Authorization", `Bearer ${apiKey}`);
 
-  const response = await fetch(url, {
+  const response = await fetch(requestUrl, {
     ...options,
     headers,
   });

@@ -52,13 +52,31 @@ app = FastAPI()
 app.include_router(import_router, dependencies=[Depends(verify_api_key)])
 app.include_router(analytics_router, dependencies=[Depends(verify_api_key)])
 
-# Configure CORS middleware for cross-origin requests
-cors_origins = os.getenv("CORS_ORIGIN", "http://localhost:3000").split(",")
-cors_origins = [origin.strip() for origin in cors_origins]  # Clean up whitespace
+# Configure CORS middleware for cross-origin requests.
+# In production, require explicit allowed origins via CORS_ORIGIN.
+app_env = os.getenv("APP_ENV", os.getenv("ENV", "development")).strip().lower()
+is_production = app_env in {"prod", "production"}
+
+configured_cors_origins = os.getenv("CORS_ORIGIN", "").strip()
+if configured_cors_origins:
+    cors_origins = [origin.strip() for origin in configured_cors_origins.split(",") if origin.strip()]
+elif is_production:
+    raise ValueError("CORS_ORIGIN is required in production")
+else:
+    cors_origins = ["http://localhost:3000", "http://127.0.0.1:3000"]
+
+configured_cors_origin_regex = os.getenv("CORS_ORIGIN_REGEX", "").strip()
+if configured_cors_origin_regex:
+    cors_origin_regex = configured_cors_origin_regex
+elif is_production:
+    cors_origin_regex = None
+else:
+    cors_origin_regex = r"^https?://(localhost|127\.0\.0\.1)(:\d+)?$"
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=cors_origins,
+    allow_origin_regex=cors_origin_regex,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
