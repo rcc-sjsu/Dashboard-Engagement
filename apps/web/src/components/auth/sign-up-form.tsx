@@ -83,9 +83,9 @@ const SignUpForm = ({ oauthError }: SignUpFormProps) => {
             <div className="flex h-8 w-8 items-center justify-center rounded-md">
               <GalleryVerticalEnd className="size-6" />
             </div>
-            <span className="sr-only">Acme Inc.</span>
+            <span className="sr-only">RCC Dashboard</span>
           </a>
-          <h1 className="text-xl font-bold">Welcome to Acme Inc.</h1>
+          <h1 className="text-xl font-bold">Welcome to RCC Dashboard</h1>
           <div className="text-center text-sm">
             Already have an account?{" "}
             <a href="/signin" className="underline underline-offset-4">
