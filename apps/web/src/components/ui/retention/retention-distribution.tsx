@@ -43,7 +43,7 @@ export function RetentionDistributionChart({ data }: { data: any }) {
       <Card>
         <CardHeader>
           <CardTitle>Retention Distribution</CardTitle>
-          <CardDescription>Aug 2025 - Jan 2026</CardDescription>
+          <CardDescription>{data?.meta?.start ?? "Aug 2025"} - {data?.meta?.end ?? "Jan 2026"}</CardDescription>
         </CardHeader>
         {/* Pass data to child components */}
         {overallChart ? (

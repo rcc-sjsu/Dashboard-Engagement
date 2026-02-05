@@ -48,7 +48,7 @@ export function ChartLineMultiple({
     <Card>
       <CardHeader>
         <CardTitle>Member Growth Over Time</CardTitle>
-        <CardDescription>{dateRangeLabel ?? ""}</CardDescription>
+        <CardDescription>{dateRangeLabel}</CardDescription>
       </CardHeader>
 
       <CardContent>

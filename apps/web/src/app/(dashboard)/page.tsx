@@ -159,8 +159,8 @@ async function OverviewChartSection() {
     return (
       <div className="min-w-0">
         <ChartLineMultiple
-          dateRangeLabel={`${json?.meta?.start ?? ""} - ${
-            json?.meta?.end ?? ""
+          dateRangeLabel={`${json?.meta?.start ?? "Aug 2025"} - ${
+            json?.meta?.end ?? "Jan 2026"
           }`}
           data={membersOverTime.map((d: any) => ({
             month: d.period,
