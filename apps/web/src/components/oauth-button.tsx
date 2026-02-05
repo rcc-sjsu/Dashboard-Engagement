@@ -40,6 +40,8 @@ const OAuthButton = ({ provider }: { provider: CustomProvider }) => {
           void signInWithOAuth(provider);
         });
       }}
+
+
     >
       <span className="flex items-center gap-2">
         {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : icon[provider]}

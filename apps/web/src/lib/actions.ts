@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { createClient, createAdminClient } from "@repo/supabase/server";
 import type { Provider } from "@repo/supabase/types";
 import { revalidatePath } from "next/cache";
+import { getBaseUrl } from "./utils";
 
 export type AuthState = {
   error?: string;
@@ -26,28 +27,40 @@ type AddAuthorizedUserResult = AuthState & {
   };
 };
 
-const normalizeBaseUrl = (url: string) => url.replace(/\/+$/, "");
-
-const getBaseUrl = () => {
-  if (process.env.NEXT_PUBLIC_BASE_URL) {
-    return normalizeBaseUrl(process.env.NEXT_PUBLIC_BASE_URL);
-  }
-  if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
-  if (process.env.NODE_ENV === "development") return "http://localhost:3000";
-  return "https://rcc-dashboard-engagement-web.vercel.app";
-};
-
 const signInWithPassword = async (
   _prevState: AuthState,
   formData: FormData,
 ): Promise<AuthState> => {
   const supabase = await createClient();
+  const adminClient = await createAdminClient();
   const credentials = {
-    email: formData.get("email") as string,
-    password: formData.get("password") as string,
+    email: (formData.get("email") as string | null)?.trim().toLowerCase(),
+    password: formData.get("password") as string | null,
   };
-  const { error } =
-    await supabase.auth.signInWithPassword(credentials);
+
+  if (!credentials.email || !credentials.password) {
+    return { error: "Email and password are required." };
+  }
+
+  // Check if user exists in profiles table
+  const { data: profile, error: profileError } = await adminClient
+    .from("profiles")
+    .select("email")
+    .ilike("email", credentials.email)
+    .maybeSingle();
+
+  if (profileError) {
+    return { error: "An error occurred during sign in." };
+  }
+
+  if (!profile) {
+    return { error: "You are not authorized to access this application." };
+  }
+
+  const { error } = await supabase.auth.signInWithPassword({
+    email: credentials.email,
+    password: credentials.password
+  });
 
   if (error) {
     return { error: error.message };
@@ -56,15 +69,17 @@ const signInWithPassword = async (
   return redirect("/");
 };
 
+
 const signInWithOAuth = async (provider: Provider) => {
-  const redirectTo = `${getBaseUrl()}/api/auth/callback`;
   const supabase = await createClient();
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider,
     options: {
-      redirectTo,
+      redirectTo: `${getBaseUrl()}/api/auth/callback`,
     },
   });
+
+
 
   if (error) {
     redirect("/signup");
@@ -76,6 +91,8 @@ const signInWithOAuth = async (provider: Provider) => {
 
   return redirect("/");
 };
+
+
 
 const signOut = async () => {
   const supabase = await createClient();
@@ -103,7 +120,8 @@ const signUpWithPassword = async (
   const { data: profile, error: profileError } = await adminClient
     .from("profiles")
     .select("email, role, name, avatar")
-    .eq("email", credentials.email)
+    .ilike("email", credentials.email)
+
     .maybeSingle();
 
   if (profileError) {
@@ -169,10 +187,8 @@ const requestPasswordReset = async (
     return { error: "Email is required" };
   }
 
-  const redirectTo = `${getBaseUrl()}/api/auth/callback?next=/reset-password`;
-  const { error } = await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo,
-  });
+  const { error } = await supabase.auth.resetPasswordForEmail(email);
+
 
   if (error) {
     return { error: error.message };
