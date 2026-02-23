@@ -9,6 +9,16 @@ from typing import Set, Tuple, Dict, Any, List, Optional
 from fastapi import APIRouter, UploadFile, File, Form, HTTPException
 from supabase import create_client, Client
 
+
+def _safe_error_message(err: Exception) -> str:
+    """Best-effort extraction of readable error details from Supabase/PostgREST errors."""
+    for attr in ("message", "details", "hint"):
+        value = getattr(err, attr, None)
+        if isinstance(value, str) and value.strip():
+            return value.strip()
+    text = str(err).strip()
+    return text or err.__class__.__name__
+
 router = APIRouter(prefix="/api/import", tags = ["import"])
 
 # -----------------------------
@@ -305,7 +315,8 @@ async def import_event_attendance(
     et = (event_type or "").strip() or None
    
     # Validate file type
-    if not file.filename.lower().endswith(".csv"):
+    filename = (file.filename or "").strip()
+    if not filename.lower().endswith(".csv"):
         raise HTTPException(status_code=400, detail="File must be a .csv")
 
     # Read CSV
@@ -334,7 +345,7 @@ async def import_event_attendance(
         "committee": (committee or "").strip() or None,
         "metadata": {
             "source": "admin_import",
-            "filename": file.filename,
+            "filename": filename,
             "email_column_used": email_col,
             "major_column_used": major_col,
             "program_column_used": program_col,
@@ -342,16 +353,23 @@ async def import_event_attendance(
         },
     }
 
-    event_insert = supabase.table("events").insert(event_payload).execute()
+    try:
+        event_insert = supabase.table("events").insert(event_payload).execute()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to create event: {_safe_error_message(e)}")
+
     if not event_insert.data:
         raise HTTPException(status_code=500, detail="Failed to insert event")
 
     event_id = event_insert.data[0]["id"] # Generated UUID
 
     # Load members once for fast lookup
-    members_resp = supabase.table("members").select(
-        "email,major_raw,major_normalized,major_category,degree_program"
-    ).execute()
+    try:
+        members_resp = supabase.table("members").select(
+            "email,major_raw,major_normalized,major_category,degree_program"
+        ).execute()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to load members: {_safe_error_message(e)}")
 
     members = members_resp.data or []
 
@@ -499,19 +517,36 @@ async def import_event_attendance(
         })
     
     if attendance_rows:
-        supabase.table("event_attendance").upsert(
-            attendance_rows,
-            on_conflict = "event_id,attendee_email"
-        ).execute()
+        try:
+            supabase.table("event_attendance").upsert(
+                attendance_rows,
+                on_conflict = "event_id,attendee_email"
+            ).execute()
+        except Exception as e:
+            # Avoid leaving an orphaned event row when attendance import fails.
+            try:
+                supabase.table("events").delete().eq("id", event_id).execute()
+            except Exception:
+                pass
+            raise HTTPException(status_code=500, detail=f"Failed to import attendance rows: {_safe_error_message(e)}")
+
         rows_imported = len(attendance_rows)
 
         # Only members can become active; recompute for affected member emails only
         affected_members = sorted({r["member_email"] for r in attendance_rows if r["member_email"]})
         
         if affected_members:
-            supabase.rpc("recompute_active_members", {"emails": affected_members}).execute()
-    
-    warnings: List[str] = []
+            try:
+                supabase.rpc("recompute_active_members", {"emails": affected_members}).execute()
+            except Exception as e:
+                warnings = [f"Attendance imported, but active-member recompute failed: {_safe_error_message(e)}"]
+            else:
+                warnings = []
+        else:
+            warnings = []
+    else:
+        warnings = []
+
     if warn_missing_major:
         warnings.append(f"{warn_missing_major} rows had no major and were not members → Unknown/Other.")
     if warn_missing_program:

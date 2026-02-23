@@ -117,6 +117,32 @@ const findHeader = (headers: string[], aliases: string[]) => {
   return null;
 };
 
+const extractImportErrorMessage = (raw: string, status: number) => {
+  const fallback = `Import failed: ${status}`;
+  const text = (raw || "").trim();
+  if (!text) return fallback;
+
+  try {
+    const parsed = JSON.parse(text);
+    const detail = parsed?.detail;
+    if (typeof detail === "string" && detail.trim()) return detail.trim();
+    if (Array.isArray(detail) && detail.length) {
+      return detail
+        .map((item) => {
+          if (typeof item === "string") return item;
+          if (item && typeof item.msg === "string") return item.msg;
+          return "";
+        })
+        .filter(Boolean)
+        .join("; ");
+    }
+  } catch {
+    // Keep raw text when response is not JSON.
+  }
+
+  return text || fallback;
+};
+
 type DuplicateGroup = {
   email: string;
   displayEmail: string;
@@ -526,7 +552,8 @@ export default function AdminImportPanel() {
 
         if (!res.ok) {
           const text = await res.text();
-          throw new Error(text || `Import failed: ${res.status}`);
+          const message = extractImportErrorMessage(text, res.status);
+          throw new Error(message || `Import failed: ${res.status}`);
         }
 
         return res.json();
@@ -544,6 +571,13 @@ export default function AdminImportPanel() {
       setSkippedRows(data.skippedRows ?? []);
       setHasImported(true);
       setStep(4);
+    } catch (error) {
+      const message =
+        error instanceof Error && error.message.trim()
+          ? error.message.trim()
+          : "Import failed.";
+      setFormErrors([message]);
+      setShowFormErrors(true);
     } finally {
       setIsSubmitting(false);
     }
