@@ -483,8 +483,8 @@ async def import_event_attendance(
         else:
             warn_missing_major += 1
         
-        # Link attendance to members table if possible
-        member_email = attendee_email if member else None
+        # Link attendance to members table using canonical stored email so FK always matches.
+        member_email = (member.get("email") if member else None)
 
         # Separate known columns vs extras for metadata debugging
         recognized_cols = {email_col}
