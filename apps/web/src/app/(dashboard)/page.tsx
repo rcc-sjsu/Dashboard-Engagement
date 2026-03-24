@@ -103,10 +103,10 @@ async function KPICardsSection() {
     const kpis = json?.overview?.kpis ?? {};
 
     const activePctRaw = kpis.active_member_pct ?? kpis.active_members_pct ?? 0;
-    const activePct = activePctRaw <= 1 ? activePctRaw * 100 : activePctRaw;
+    const activePct = activePctRaw; // already percent
 
     const growthRaw = kpis.registered_growth_last_30d_pct ?? 0;
-    const growthPct = growthRaw <= 1 ? growthRaw * 100 : growthRaw;
+    const growthPct = growthRaw; // already percent
 
     return (
       <div className="flex flex-col gap-8">
