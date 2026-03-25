@@ -12,7 +12,7 @@ import {
   MissionSectionSkeleton,
   RetentionChartSkeleton,
 } from "@/components/dashboard/skeletons";
-
+import { SemesterSelect } from "@/components/ui/semester-select";
 // Type definitions for API responses
 interface AnalyticsOverview {
   overview?: {
@@ -67,6 +67,7 @@ export default async function Page() {
             <h1 className="text-2xl font-semibold sm:text-3xl">
               RCC Engagement Dashboard
             </h1>
+            <SemesterSelect />
           </div>
           <h3 className="text-sm font-medium text-muted-foreground sm:text-base">
             Overview & Growth
