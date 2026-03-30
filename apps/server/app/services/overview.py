@@ -9,6 +9,8 @@ from psycopg2.extensions import connection as Connection
 def build_overview_payload(
     conn: Connection,
     *,
+    semester_id: int,
+    event_id: str = "all",
     members_table: str = "public.members",
     attendance_table: str = "public.event_attendance",
 ):
@@ -29,7 +31,16 @@ def build_overview_payload(
     Returns:
         dict: Contains 'overview' with 'kpis' and 'members_over_time'
     """
-    
+    if event_id == "all":
+        where_clause = f"WHERE semester_id = {semester_id}"
+    else:
+        where_clause = f"""
+        WHERE id IN (
+            SELECT member_id
+            FROM {attendance_table}
+            WHERE event_id = {event_id}
+        )
+    """
     # KPI metrics: total members, active members, active %, and 30-day growth rate
     kpis_sql = f"""
     WITH stats AS (
@@ -37,12 +48,14 @@ def build_overview_payload(
             COUNT(*)::int AS total_members,
             COUNT(*) FILTER (WHERE is_active_member = TRUE)::int AS active_members
         FROM {members_table}
+        {where_clause}
     ),
     growth AS (
         SELECT 
             COUNT(*) FILTER (WHERE joined_at >= CURRENT_DATE - INTERVAL '30 days')::int AS recent_30d,
             COUNT(*) FILTER (WHERE joined_at >= CURRENT_DATE - INTERVAL '60 days' AND joined_at < CURRENT_DATE - INTERVAL '30 days')::int AS previous_30d
         FROM {members_table}
+        {where_clause}
     )
     SELECT 
         s.total_members,
@@ -56,9 +69,9 @@ def build_overview_payload(
     time_series_sql = f"""
     SELECT 
         TO_CHAR(date_series, 'YYYY-MM') AS period,
-        (SELECT COUNT(*)::int FROM {members_table} WHERE joined_at <= date_series) AS registered_members_cumulative,
-        (SELECT COUNT(*)::int FROM {members_table} WHERE is_active_member = TRUE AND active_member_start_date IS NOT NULL AND active_member_start_date <= date_series) AS active_members_cumulative
-    FROM generate_series((SELECT DATE_TRUNC('month', MIN(joined_at)) FROM {members_table}), DATE_TRUNC('month', CURRENT_DATE), INTERVAL '1 month') AS date_series
+        (SELECT COUNT(*)::int FROM {members_table} {where_clause} AND joined_at <= date_series) AS registered_members_cumulative,
+        (SELECT COUNT(*)::int FROM {members_table} {where_clause} AND is_active_member = TRUE AND active_member_start_date IS NOT NULL AND active_member_start_date <= date_series) AS active_members_cumulative
+    FROM generate_series((SELECT DATE_TRUNC('month', MIN(joined_at)) FROM {members_table} {where_clause}), DATE_TRUNC('month', CURRENT_DATE), INTERVAL '1 month') AS date_series
     ORDER BY date_series;
     """
     
