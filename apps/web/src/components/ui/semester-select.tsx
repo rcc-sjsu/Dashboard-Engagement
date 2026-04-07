@@ -1,6 +1,6 @@
 "use client";
 
-import { userState } from "react";
+import { useState } from "react";
 
 const SEMESTER_OPTIONS = [
     { label: "All Semesters", value: "all"},
@@ -8,7 +8,7 @@ const SEMESTER_OPTIONS = [
 ]
 
 export function SemesterSelect(){
-    const [semester, setSemester] = userState("all");
+    const [semester, setSemester] = useState("all");
 
     const handleChange = (value: string) => { 
         setSemester(value);
