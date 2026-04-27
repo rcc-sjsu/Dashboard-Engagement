@@ -72,10 +72,17 @@ const signInWithPassword = async (
 
 const signInWithOAuth = async (provider: Provider) => {
   const supabase = await createClient();
+  const queryParams =
+    provider === "google"
+      ? {
+          prompt: "select_account",
+        }
+      : undefined;
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider,
     options: {
       redirectTo: `${getBaseUrl()}/api/auth/callback`,
+      queryParams,
     },
   });
 

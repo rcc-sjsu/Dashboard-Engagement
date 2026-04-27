@@ -494,13 +494,6 @@ export default function AdminImportPanel() {
       return;
     }
 
-    const serverUrl = process.env.SERVER_URL || process.env.NEXT_PUBLIC_SERVER_URL;
-    if (!serverUrl) {
-      setFormErrors(["SERVER_URL is not set."]);
-      toast.error("SERVER_URL is not set.");
-      return;
-    }
-
     if (hasUnresolvedDuplicates) {
       setFormErrors([
         "Resolve duplicate emails by selecting one row per email.",

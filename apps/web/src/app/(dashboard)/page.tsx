@@ -6,6 +6,7 @@ import { BigNumber } from "@/components/ui/kpi";
 import { RetentionDistributionChart } from "@/components/ui/retention/retention-distribution";
 import { MissionSection } from "@/components/ui/mission/MissionSection";
 import { authenticatedServerFetch } from "@/lib/api-client";
+import { SemesterFilter } from "@/components/dashboard/semester-filter";
 import {
   KPICardsSkeleton,
   ChartSkeleton,
@@ -26,6 +27,8 @@ interface AnalyticsOverview {
   meta?: {
     start?: string;
     end?: string;
+    selected_semester?: string;
+    semester_options?: SemesterOption[];
   };
 }
 
@@ -48,7 +51,31 @@ interface RetentionResponse {
   [key: string]: any;
 }
 
-export default async function Page() {
+interface SemesterOption {
+  value: string;
+  label: string;
+  start_date?: string;
+  end_date?: string;
+}
+
+interface SemesterOptionsResponse {
+  semester_options?: SemesterOption[];
+}
+
+function buildAnalyticsEndpoint(endpoint: string, semester: string) {
+  if (semester === "all") {
+    return endpoint;
+  }
+  return `${endpoint}?semester=${encodeURIComponent(semester)}`;
+}
+
+export default async function Page({
+  searchParams,
+}: {
+  searchParams?: Promise<{
+    semester?: string | string[];
+  }>;
+}) {
   const supabase = await createClient();
   const {
     data: { user },
@@ -58,15 +85,27 @@ export default async function Page() {
     return redirect("/signin");
   }
 
+  const resolvedSearchParams = searchParams ? await searchParams : undefined;
+  const rawSemester = resolvedSearchParams?.semester;
+  const selectedSemester =
+    (Array.isArray(rawSemester) ? rawSemester[0] : rawSemester)?.trim() || "all";
+  const semesterJson = await authenticatedServerFetch<SemesterOptionsResponse>(
+    "/api/analytics/semesters",
+  );
+  const semesterOptions = semesterJson?.semester_options ?? [
+    { value: "all", label: "All Semesters" },
+  ];
+
   return (
     <main className="flex w-full flex-1 flex-col gap-6 px-4 py-6 sm:gap-8 sm:px-6 lg:px-10 xl:px-12">
       <div className="mx-auto w-full max-w-7xl space-y-6 sm:space-y-8">
         {/* Header */}
         <div className="space-y-2">
-          <div className="flex justify-between items-center">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <h1 className="text-2xl font-semibold sm:text-3xl">
               RCC Engagement Dashboard
             </h1>
+            <SemesterFilter options={semesterOptions} value={selectedSemester} />
           </div>
           <h3 className="text-sm font-medium text-muted-foreground sm:text-base">
             Overview & Growth
@@ -74,32 +113,34 @@ export default async function Page() {
         </div>
 
         {/* KPI CARDS */}
-        <Suspense fallback={<KPICardsSkeleton />}>
-          <KPICardsSection />
+        <Suspense fallback={<KPICardsSkeleton />} key={`kpi-${selectedSemester}`}>
+          <KPICardsSection semester={selectedSemester} />
         </Suspense>
 
         {/* LINE CHART */}
-        <Suspense fallback={<ChartSkeleton />}>
-          <OverviewChartSection />
+        <Suspense fallback={<ChartSkeleton />} key={`chart-${selectedSemester}`}>
+          <OverviewChartSection semester={selectedSemester} />
         </Suspense>
 
         {/* MISSION SECTION */}
-        <Suspense fallback={<MissionSectionSkeleton />}>
-          <MissionSectionWrapper />
+        <Suspense fallback={<MissionSectionSkeleton />} key={`mission-${selectedSemester}`}>
+          <MissionSectionWrapper semester={selectedSemester} />
         </Suspense>
 
         {/* RETENTION SECTION */}
-        <Suspense fallback={<RetentionChartSkeleton />}>
-          <RetentionChartSection />
+        <Suspense fallback={<RetentionChartSkeleton />} key={`retention-${selectedSemester}`}>
+          <RetentionChartSection semester={selectedSemester} />
         </Suspense>
       </div>
     </main>
   );
 }
 
-async function KPICardsSection() {
+async function KPICardsSection({ semester }: { semester: string }) {
   try {
-    const json = await authenticatedServerFetch<AnalyticsOverview>("/api/analytics/overview");
+    const json = await authenticatedServerFetch<AnalyticsOverview>(
+      buildAnalyticsEndpoint("/api/analytics/overview", semester),
+    );
     const kpis = json?.overview?.kpis ?? {};
 
     const activePctRaw = kpis.active_member_pct ?? kpis.active_members_pct ?? 0;
@@ -151,9 +192,11 @@ async function KPICardsSection() {
   }
 }
 
-async function OverviewChartSection() {
+async function OverviewChartSection({ semester }: { semester: string }) {
   try {
-    const json = await authenticatedServerFetch<AnalyticsOverview>("/api/analytics/overview");
+    const json = await authenticatedServerFetch<AnalyticsOverview>(
+      buildAnalyticsEndpoint("/api/analytics/overview", semester),
+    );
     const membersOverTime = json?.overview?.members_over_time ?? [];
 
     return (
@@ -176,9 +219,11 @@ async function OverviewChartSection() {
   }
 }
 
-async function MissionSectionWrapper() {
+async function MissionSectionWrapper({ semester }: { semester: string }) {
   try {
-    const missionJson = await authenticatedServerFetch<MissionResponse>("/api/analytics/mission");
+    const missionJson = await authenticatedServerFetch<MissionResponse>(
+      buildAnalyticsEndpoint("/api/analytics/mission", semester),
+    );
     const mission = {
       major_category_distribution: missionJson?.mission?.major_category_distribution ?? missionJson?.major_category_distribution ?? [],
       class_year_distribution: missionJson?.mission?.class_year_distribution ?? missionJson?.class_year_distribution ?? [],
@@ -196,9 +241,11 @@ async function MissionSectionWrapper() {
   }
 }
 
-async function RetentionChartSection() {
+async function RetentionChartSection({ semester }: { semester: string }) {
   try {
-    const retentionJson = await authenticatedServerFetch<RetentionResponse>("/api/analytics/retention");
+    const retentionJson = await authenticatedServerFetch<RetentionResponse>(
+      buildAnalyticsEndpoint("/api/analytics/retention", semester),
+    );
     const retention =
       retentionJson?.retention?.retention ??
       retentionJson?.retention ??
