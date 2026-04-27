@@ -25,6 +25,7 @@ Scope: `apps/server`, `apps/web`, monorepo task wiring
   - Impact: startup/runtime failure path is confusing and unhandled.
   - Fix: return `{}` or explicitly raise a clear `RuntimeError("DATABASE_URL is required")`.
 
+
 - [x] **Retention query double-counts people when same email has multiple categories**
   - File: `apps/server/app/services/retention.py` (lines 37-77 and 80-123)
   - Problem: `people` CTE uses `UNION` on `(email, major_category)` instead of one row per email.
