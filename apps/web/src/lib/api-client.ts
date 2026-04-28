@@ -15,10 +15,11 @@ export const getBaseUrl = () => {
 const getApiKey = () => {
   const key =
     process.env.SERVER_INTERNAL_API_SECRET ||
-    process.env.NEXT_PUBLIC_SERVER_INTERNAL_API_SECRET;
+    process.env.INTERNAL_API_SECRET ||
+    process.env.INTERNAL_API_KEY;
   if (!key) {
     throw new Error(
-      "No API secret configured. Set INTERNAL_API_SECRET (preferred) or SERVER_INTERNAL_API_SECRET.",
+      "No API secret configured. Set INTERNAL_API_SECRET (preferred), SERVER_INTERNAL_API_SECRET, or INTERNAL_API_KEY.",
     );
   }
   return key;
@@ -69,15 +70,16 @@ export async function authenticatedFetch(
   url: string,
   options?: RequestInit,
 ): Promise<Response> {
-  const apiKey = getApiKey();
+  const isServerRuntime = typeof window === "undefined";
   const isAbsolute = /^https?:\/\//i.test(url);
   const isLocalNextApiRoute = url.startsWith("/api/");
   const requestUrl =
     isAbsolute || isLocalNextApiRoute ? url : `${getBaseUrl()}${url}`;
 
-  // Add authorization header to requests
   const headers = new Headers(options?.headers || {});
-  headers.set("Authorization", `Bearer ${apiKey}`);
+  if (isServerRuntime && !isLocalNextApiRoute) {
+    headers.set("Authorization", `Bearer ${getApiKey()}`);
+  }
 
   const response = await fetch(requestUrl, {
     ...options,

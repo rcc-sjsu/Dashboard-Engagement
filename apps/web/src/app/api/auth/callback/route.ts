@@ -1,7 +1,77 @@
 import { NextResponse } from "next/server";
 import { createAdminClient, createClient } from "@repo/supabase/server";
 
+const normalizeEmail = (value: string | null | undefined) =>
+  value?.trim().toLowerCase() ?? "";
 
+type AuthorizedProfile = {
+  id: string;
+  name: string | null;
+  avatar: string | null;
+  email?: string | null;
+};
+
+async function findAuthorizedProfile(
+  email: string,
+): Promise<AuthorizedProfile | null> {
+  const normalizedEmail = normalizeEmail(email);
+  if (!normalizedEmail) {
+    return null;
+  }
+
+  const adminClient = await createAdminClient();
+
+  // Fast path: exact match for normalized emails.
+  const { data: directMatch, error: directError } = await adminClient
+    .from("profiles")
+    .select("id, name, avatar, email")
+    .eq("email", normalizedEmail)
+    .maybeSingle();
+
+  if (directError) {
+    throw directError;
+  }
+
+  if (directMatch) {
+    return directMatch as AuthorizedProfile;
+  }
+
+  // Fallback path: normalize whitespace/casing to handle legacy profile data.
+  // Use pagination so large profile tables are fully scanned.
+  const pageSize = 1000;
+  let from = 0;
+
+  while (true) {
+    const to = from + pageSize - 1;
+    const { data: candidates, error: candidateError } = await adminClient
+      .from("profiles")
+      .select("id, name, avatar, email")
+      .not("email", "is", null)
+      .range(from, to);
+
+    if (candidateError) {
+      throw candidateError;
+    }
+
+    if (!candidates || candidates.length === 0) {
+      return null;
+    }
+
+    const match = (candidates as AuthorizedProfile[]).find(
+      (profile) => normalizeEmail(profile.email) === normalizedEmail,
+    );
+
+    if (match) {
+      return match;
+    }
+
+    if (candidates.length < pageSize) {
+      return null;
+    }
+
+    from += pageSize;
+  }
+}
 
 export async function GET(request: Request) {
   const { origin, searchParams } = new URL(request.url);
@@ -21,14 +91,16 @@ export async function GET(request: Request) {
         return NextResponse.redirect(`${origin}/signin?error=not_authorized`);
       }
 
-      const adminClient = await createAdminClient();
-      const { data: profile, error: profileError } = await adminClient
-        .from("profiles")
-        .select("id, name, avatar")
-        .ilike("email", email)
-        .maybeSingle();
+      let profile: AuthorizedProfile | null = null;
+      try {
+        profile = await findAuthorizedProfile(email);
+      } catch (profileError) {
+        console.error("Failed to resolve authorized profile for OAuth user:", profileError);
+      }
 
-      if (profileError || !profile) {
+      const adminClient = await createAdminClient();
+
+      if (!profile) {
         console.warn(`Unauthorized login attempt: ${email}`);
         await supabase.auth.signOut();
         await adminClient.auth.admin.deleteUser(user.id);
@@ -72,6 +144,4 @@ export async function GET(request: Request) {
 
   return NextResponse.redirect(`${origin}/auth/auth-code-error`);
 }
-
-
 

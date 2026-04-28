@@ -5,7 +5,12 @@ Provides breakdowns of member composition by major and class year, plus analysis
 of event attendance diversity across different academic majors.
 """
 
+from __future__ import annotations
+
+from datetime import date
+
 from psycopg2.extensions import connection as Connection
+
 
 def build_mission_payload(
     conn: Connection,
@@ -13,26 +18,19 @@ def build_mission_payload(
     members_table: str = "public.members",
     events_table: str = "public.events",
     attendance_table: str = "public.event_attendance",
+    semester_start: date | None = None,
+    semester_end: date | None = None,
 ):
     """
     Mission analytics: member demographics + event diversity
-    
-    Returns analysis of:
-    - Member distribution by major category
-    - Member distribution by class year
-    - Top events with attendance breakdown by major category
-    
-    Args:
-        conn: PostgreSQL database connection
-        members_table: Name of the members table (default: public.members)
-        events_table: Name of the events table (default: public.events)
-        attendance_table: Name of the attendance table (default: public.event_attendance)
-    
-    Returns:
-        dict: Formatted payload with 'mission' containing demographic distributions
+
+    If semester_start and semester_end are provided, demographic distributions are
+    scoped to members who attended at least one event in that semester and event
+    diversity is restricted to semester events.
     """
 
-    # Normalize major_category values to a single canonical label
+    is_filtered = semester_start is not None and semester_end is not None
+
     norm_major_category_sql = """
         COALESCE(
           NULLIF(
@@ -46,53 +44,119 @@ def build_mission_payload(
         )
     """
 
-    # Count members by major category
-    major_dist_sql = f"""
-    SELECT
-        {norm_major_category_sql} AS major_category,
-        COUNT(*)::int AS members
-    FROM {members_table}
-    GROUP BY 1
-    ORDER BY members DESC;
-    """
+    norm_class_year_sql = "COALESCE(NULLIF(TRIM(class_year), ''), 'Other/Unknown')"
 
-    # Count members by class year
-    class_year_sql = f"""
-    SELECT 
-        COALESCE(NULLIF(class_year, ''), 'Other/Unknown') AS class_year,
-        COUNT(*)::int AS members
-    FROM {members_table}
-    GROUP BY class_year
-    ORDER BY 
-        CASE class_year
-            WHEN 'Freshman' THEN 1
-            WHEN 'Sophomore' THEN 2
-            WHEN 'Junior' THEN 3
-            WHEN 'Senior' THEN 4
-            WHEN 'Grad' THEN 5
-            ELSE 6
-        END;
-    """
+    if is_filtered:
+        major_dist_sql = f"""
+        SELECT
+            {norm_major_category_sql} AS major_category,
+            COUNT(*)::int AS members
+        FROM {members_table} m
+        WHERE EXISTS (
+            SELECT 1
+            FROM {attendance_table} a
+            JOIN {events_table} e ON e.id = a.event_id
+            WHERE e.starts_at >= %(semester_start)s
+              AND e.starts_at < %(semester_end)s
+              AND (
+                (a.member_email IS NOT NULL AND LOWER(TRIM(a.member_email)) = LOWER(TRIM(m.email)))
+                OR (a.attendee_email IS NOT NULL AND LOWER(TRIM(a.attendee_email)) = LOWER(TRIM(m.email)))
+              )
+        )
+        GROUP BY 1
+        ORDER BY members DESC;
+        """
 
-    # Get top events by total attendance with major category breakdown
+        class_year_sql = f"""
+        WITH grouped_class_year AS (
+            SELECT
+                {norm_class_year_sql} AS class_year,
+                COUNT(*)::int AS members
+            FROM {members_table} m
+            WHERE EXISTS (
+                SELECT 1
+                FROM {attendance_table} a
+                JOIN {events_table} e ON e.id = a.event_id
+                WHERE e.starts_at >= %(semester_start)s
+                  AND e.starts_at < %(semester_end)s
+                  AND (
+                    (a.member_email IS NOT NULL AND LOWER(TRIM(a.member_email)) = LOWER(TRIM(m.email)))
+                    OR (a.attendee_email IS NOT NULL AND LOWER(TRIM(a.attendee_email)) = LOWER(TRIM(m.email)))
+                  )
+            )
+            GROUP BY 1
+        )
+        SELECT class_year, members
+        FROM grouped_class_year
+        ORDER BY
+            CASE class_year
+                WHEN 'Freshman' THEN 1
+                WHEN 'Sophomore' THEN 2
+                WHEN 'Junior' THEN 3
+                WHEN 'Senior' THEN 4
+                WHEN 'Grad' THEN 5
+                ELSE 6
+            END,
+            class_year;
+        """
+
+        event_filter_clause = "WHERE e.starts_at >= %(semester_start)s AND e.starts_at < %(semester_end)s"
+        params = {
+            "semester_start": semester_start,
+            "semester_end": semester_end,
+        }
+    else:
+        major_dist_sql = f"""
+        SELECT
+            {norm_major_category_sql} AS major_category,
+            COUNT(*)::int AS members
+        FROM {members_table}
+        GROUP BY 1
+        ORDER BY members DESC;
+        """
+
+        class_year_sql = f"""
+        WITH grouped_class_year AS (
+            SELECT
+                {norm_class_year_sql} AS class_year,
+                COUNT(*)::int AS members
+            FROM {members_table}
+            GROUP BY 1
+        )
+        SELECT class_year, members
+        FROM grouped_class_year
+        ORDER BY
+            CASE class_year
+                WHEN 'Freshman' THEN 1
+                WHEN 'Sophomore' THEN 2
+                WHEN 'Junior' THEN 3
+                WHEN 'Senior' THEN 4
+                WHEN 'Grad' THEN 5
+                ELSE 6
+            END,
+            class_year;
+        """
+
+        event_filter_clause = ""
+        params = None
+
     event_diversity_sql = f"""
     WITH event_attendance_counts AS (
-        -- Get total unique attendees per event
-        SELECT 
+        SELECT
             e.id AS event_id,
             e.title AS event_title,
             e.starts_at,
             COUNT(DISTINCT a.attendee_email)::int AS total_attendees
         FROM {events_table} e
         LEFT JOIN {attendance_table} a ON e.id = a.event_id
+        {event_filter_clause}
         GROUP BY e.id, e.title, e.starts_at
         HAVING COUNT(DISTINCT a.attendee_email) > 0
         ORDER BY total_attendees DESC
         LIMIT 10
     ),
-    -- Break down member majors per event
     event_major_breakdown AS (
-        SELECT 
+        SELECT
             a.event_id,
             COALESCE(
               NULLIF(
@@ -110,7 +174,7 @@ def build_mission_payload(
         WHERE a.event_id IN (SELECT event_id FROM event_attendance_counts)
         GROUP BY a.event_id, 2
     )
-    SELECT 
+    SELECT
         eac.event_id,
         eac.event_title,
         eac.starts_at,
@@ -123,41 +187,46 @@ def build_mission_payload(
     ORDER BY eac.total_attendees DESC, emb.count DESC;
     """
 
-    # Execute all mission queries
     with conn.cursor() as cur:
-        cur.execute(major_dist_sql)
+        if params:
+            cur.execute(major_dist_sql, params)
+        else:
+            cur.execute(major_dist_sql)
         major_dist = cur.fetchall()
 
-        cur.execute(class_year_sql)
+        if params:
+            cur.execute(class_year_sql, params)
+        else:
+            cur.execute(class_year_sql)
         class_year_dist = cur.fetchall()
 
-        cur.execute(event_diversity_sql)
+        if params:
+            cur.execute(event_diversity_sql, params)
+        else:
+            cur.execute(event_diversity_sql)
         event_rows = cur.fetchall()
 
-    # Transform event rows into structured format
-    # Group multiple major category rows per event into single event objects
     events_dict = {}
     for row in event_rows:
         event_id = str(row["event_id"])
 
-        # Create event entry if not exists
         if event_id not in events_dict:
             events_dict[event_id] = {
                 "event_id": event_id,
                 "event_title": row["event_title"],
                 "starts_at": row["starts_at"].isoformat() if row["starts_at"] else None,
                 "total_attendees": row["total_attendees"],
-                "segments": []
+                "segments": [],
             }
 
-        # Add major category segment to event
-        events_dict[event_id]["segments"].append({
-            "major_category": row["major_category"],
-            "pct": float(row["pct"]),
-            "count": row["count"]
-        })
+        events_dict[event_id]["segments"].append(
+            {
+                "major_category": row["major_category"],
+                "pct": float(row["pct"]),
+                "count": row["count"],
+            }
+        )
 
-    # Return mission payload 
     return {
         "mission": {
             "major_category_distribution": [
@@ -168,6 +237,6 @@ def build_mission_payload(
                 {"class_year": row["class_year"], "members": row["members"]}
                 for row in class_year_dist
             ],
-            "event_major_category_percent": list(events_dict.values())
+            "event_major_category_percent": list(events_dict.values()),
         }
     }

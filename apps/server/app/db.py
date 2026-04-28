@@ -15,10 +15,11 @@ def _get_env_value(*keys: str) -> str | None:
             return value
     return None
 
-def _get_connection_kwargs() -> dict:
-    db_url = os.getenv("DATABASE_URL")
-    if db_url:
-        return {"dsn": db_url}
+def _get_connection_kwargs() -> dict[str, str]:
+    db_url = _get_env_value("DATABASE_URL")
+    if not db_url:
+        raise RuntimeError("DATABASE_URL is required")
+    return {"dsn": db_url}
     
 # The context manager yields a database connection and ensures it is closed after use
 @contextmanager

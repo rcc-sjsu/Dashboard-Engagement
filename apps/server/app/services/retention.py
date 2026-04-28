@@ -1,4 +1,5 @@
 from psycopg2.extensions import connection as Connection
+from datetime import date
 
 BUCKETS = ["0", "1", "2", "3", "4+"]
 
@@ -16,29 +17,59 @@ def build_retention_payload(
     attendee_email_col: str = "attendee_email",
     attendee_major_category_col: str = "attendee_major_category",
     event_id_col: str = "event_id",
+    events_table: str = "public.events",
+    semester_start: date | None = None,
+    semester_end: date | None = None,
 ):
+    is_filtered = semester_start is not None and semester_end is not None
+
+    event_join_sql = (
+        f"JOIN {events_table} e ON e.id = a.{event_id_col}"
+        if is_filtered
+        else ""
+    )
+    event_where_sql = (
+        "AND e.starts_at >= %(semester_start)s AND e.starts_at < %(semester_end)s"
+        if is_filtered
+        else ""
+    )
+
     overall_sql = f"""
-    WITH people AS (
+    WITH raw_people AS (
       SELECT
         LOWER(TRIM(m.{members_email_col})) AS email,
-        COALESCE(NULLIF(m.{members_major_category_col}, ''), 'Unknown') AS major_category
+        COALESCE(NULLIF(TRIM(m.{members_major_category_col}), ''), 'Unknown') AS major_category,
+        1 AS source_priority
       FROM {members_table} m
       WHERE m.{members_email_col} IS NOT NULL
 
-      UNION
+      UNION ALL
 
       SELECT
         LOWER(TRIM(a.{attendee_email_col})) AS email,
-        COALESCE(NULLIF(a.{attendee_major_category_col}, ''), 'Unknown') AS major_category
+        COALESCE(NULLIF(TRIM(a.{attendee_major_category_col}), ''), 'Unknown') AS major_category,
+        2 AS source_priority
       FROM {attendance_table} a
+      {event_join_sql}
       WHERE a.{attendee_email_col} IS NOT NULL
+      {event_where_sql}
+    ),
+    people AS (
+      SELECT DISTINCT ON (email)
+        email,
+        major_category
+      FROM raw_people
+      WHERE email <> ''
+      ORDER BY email, source_priority
     ),
     attendance_counts AS (
       SELECT
         LOWER(TRIM(a.{attendee_email_col})) AS email,
         COUNT(DISTINCT a.{event_id_col}) AS events_attended
       FROM {attendance_table} a
+      {event_join_sql}
       WHERE a.{attendee_email_col} IS NOT NULL
+      {event_where_sql}
       GROUP BY 1
     ),
     per_person AS (
@@ -57,27 +88,41 @@ def build_retention_payload(
     """
 
     by_major_sql = f"""
-    WITH people AS (
+    WITH raw_people AS (
       SELECT
         LOWER(TRIM(m.{members_email_col})) AS email,
-        COALESCE(NULLIF(m.{members_major_category_col}, ''), 'Unknown') AS major_category
+        COALESCE(NULLIF(TRIM(m.{members_major_category_col}), ''), 'Unknown') AS major_category,
+        1 AS source_priority
       FROM {members_table} m
       WHERE m.{members_email_col} IS NOT NULL
 
-      UNION
+      UNION ALL
 
       SELECT
         LOWER(TRIM(a.{attendee_email_col})) AS email,
-        COALESCE(NULLIF(a.{attendee_major_category_col}, ''), 'Unknown') AS major_category
+        COALESCE(NULLIF(TRIM(a.{attendee_major_category_col}), ''), 'Unknown') AS major_category,
+        2 AS source_priority
       FROM {attendance_table} a
+      {event_join_sql}
       WHERE a.{attendee_email_col} IS NOT NULL
+      {event_where_sql}
+    ),
+    people AS (
+      SELECT DISTINCT ON (email)
+        email,
+        major_category
+      FROM raw_people
+      WHERE email <> ''
+      ORDER BY email, source_priority
     ),
     attendance_counts AS (
       SELECT
         LOWER(TRIM(a.{attendee_email_col})) AS email,
         COUNT(DISTINCT a.{event_id_col}) AS events_attended
       FROM {attendance_table} a
+      {event_join_sql}
       WHERE a.{attendee_email_col} IS NOT NULL
+      {event_where_sql}
       GROUP BY 1
     ),
     per_person AS (
@@ -98,9 +143,24 @@ def build_retention_payload(
     """
 
     with conn.cursor() as cur:
-        cur.execute(overall_sql)
+        params = (
+            {
+                "semester_start": semester_start,
+                "semester_end": semester_end,
+            }
+            if is_filtered
+            else None
+        )
+
+        if params:
+            cur.execute(overall_sql, params)
+        else:
+            cur.execute(overall_sql)
         overall_rows = cur.fetchall()
-        cur.execute(by_major_sql)
+        if params:
+            cur.execute(by_major_sql, params)
+        else:
+            cur.execute(by_major_sql)
         by_major_rows = cur.fetchall()
 
     overall = _fill_buckets(overall_rows)
