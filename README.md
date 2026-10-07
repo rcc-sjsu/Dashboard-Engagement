@@ -264,7 +264,7 @@ Shared env schemas live in `packages/env/src/*.ts`.
 ## Contributors & Roles 🤝
 | Name              | Role / Title                          | Key Contributions                                                      |
 |-------------------|---------------------------------------|------------------------------------------------------------------------|
-| Julia Husainzada  |                                       |                                                                        |
+| Julia Husainzada  | Project Lead                          | Project Management, Data Engineering, API Development                  |
 | Asmita Dulla      |                                       |                                                                        |
 | Izabella          | Backend / Data Developer              | Did a little bit of everything related to analytics and data           |
 | Samriddhi Matharu |                                       |                                                                        |
