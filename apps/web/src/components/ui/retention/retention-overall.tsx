@@ -46,9 +46,14 @@ export function RetentionOverall({ data }: { data: any }) {
           <XAxis
             dataKey="bucket"
             tickLine={false}
-            tickMargin={10}
+            tickMargin={1}
             axisLine={false}
             tickFormatter={(value) => value.split(" ")[0]} // Show just "0", "1", "2", etc.
+            label={{
+              value: "Events Attended",
+              position: "insideBottom",
+              offset: -2,
+            }}
           />
           <YAxis
             className="pr-2"
@@ -63,7 +68,7 @@ export function RetentionOverall({ data }: { data: any }) {
             cursor={false}
             content={<ChartTooltipContent hideLabel />}
           />
-          <Bar dataKey="count" fill="var(--color-count)" radius={8} />
+          <Bar dataKey="count" fill="var(--color-count)" radius={4} />
         </BarChart>
       </ChartContainer>
     </CardContent>
