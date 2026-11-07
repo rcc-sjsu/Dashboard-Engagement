@@ -41,7 +41,7 @@ export async function proxyToBackend(
     headers.delete("content-length");
     headers.set("Authorization", `Bearer ${getServerApiKey()}`);
 
-    const init: RequestInit = {
+    const init: RequestInit & { duplex?: "half" } = {
       method: request.method,
       headers,
       redirect: "manual",
@@ -49,6 +49,7 @@ export async function proxyToBackend(
 
     if (request.method !== "GET" && request.method !== "HEAD") {
       init.body = request.body;
+      if (request.body) init.duplex = "half";
     }
 
     const response = await fetch(targetUrl, init);

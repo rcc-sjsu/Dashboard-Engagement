@@ -2,8 +2,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export function KPICardsSkeleton() {
   return (
-    <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-      {[1, 2, 3, 4].map((i) => (
+    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      {[1, 2, 3, 4, 5].map((i) => (
         <div key={i} className="space-y-3 p-4 border rounded-lg">
           <Skeleton className="h-4 w-24" />
           <Skeleton className="h-8 w-16" />

@@ -44,52 +44,9 @@ const chartConfig = {
 
 export function RetentionStacked({ data }: { data: any }) {
   // Transform backend data to stacked format
-  const chartData = data?.attendance_count_distribution_by_major_category
-    ? transformToStackedData(
-        data.attendance_count_distribution_by_major_category,
-      )
-    : [
-        {
-          month: "0",
-          Technical: 162,
-          Business: 19,
-          "Humanities & Arts": 7,
-          "Health Sciences": 0,
-          "Other/Unknown": 9,
-        },
-        {
-          month: "1",
-          Technical: 46,
-          Business: 15,
-          "Humanities & Arts": 5,
-          "Health Sciences": 2,
-          "Other/Unknown": 72,
-        },
-        {
-          month: "2",
-          Technical: 36,
-          Business: 3,
-          "Humanities & Arts": 0,
-          "Health Sciences": 0,
-          "Other/Unknown": 6,
-        },
-        {
-          month: "3",
-          Technical: 13,
-          Business: 1,
-          "Humanities & Arts": 1,
-          "Health Sciences": 1,
-          "Other/Unknown": 0,
-        },
-        {
-          month: "4+",
-          Technical: 16,
-          Business: 0,
-          "Humanities & Arts": 2,
-          "Health Sciences": 0,
-          "Other/Unknown": 1,
-        },
-      ];
+  const chartData = transformToStackedData(
+    data?.attendance_count_distribution_by_major_category ?? [],
+  );
 
   // Major categories to render as stacked bars
   const keys = Object.keys(chartConfig);
@@ -114,7 +71,7 @@ export function RetentionStacked({ data }: { data: any }) {
             className="pr-2"
             axisLine={false}
             label={{
-              value: "Number of Members",
+              value: "Number of People",
               angle: -90,
               position: "insideLeft",
             }}
@@ -158,11 +115,14 @@ function transformToStackedData(byMajor: any[]) {
 
   // Fill  data from backend
   byMajor.forEach((majorData) => {
-    const majorCategory = majorData.major_category;
+    const rawCategory = majorData.major_category;
+    const majorCategory = rawCategory === "Unknown" || rawCategory === "Unknown/other"
+      ? "Other/Unknown"
+      : rawCategory;
     majorData.distribution.forEach((item: any) => {
       const bucket = item.events_attended_bucket;
       if (bucketMap[bucket]) {
-        bucketMap[bucket][majorCategory] = item.people;
+        bucketMap[bucket][majorCategory] = (bucketMap[bucket][majorCategory] ?? 0) + item.people;
       }
     });
   });
