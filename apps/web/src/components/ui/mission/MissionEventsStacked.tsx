@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { 
     ChartContainer, 
     ChartLegend, 
@@ -30,13 +30,14 @@ type EventMajorCategoryPercent = {
 type Props = {
     events: EventMajorCategoryPercent[];
     majorOrder: string[]
+    periodLabel: string;
 };
 
 /**
  * Stacked bar chart: each bar = event, each segment = major category
  * Uses `count` (not %) so the stacked height equals total categorized attendees
  */
-export function MissionEventsStacked( { events, majorOrder }: Props ) {
+export function MissionEventsStacked( { events, majorOrder, periodLabel }: Props ) {
     const [isMobile, setIsMobile] = useState(false);
 
     useEffect(() => {
@@ -122,6 +123,9 @@ export function MissionEventsStacked( { events, majorOrder }: Props ) {
         <Card className="h-full">
             <CardHeader className="pb-2">
                 <CardTitle className="text-base sm:text-lg">Event Diversity by Major</CardTitle>
+                <CardDescription>
+                    All attendees, including non-members — {periodLabel}. Up to 10 events with the highest attendance.
+                </CardDescription>
             </CardHeader>
     
             <CardContent className="pt-0">

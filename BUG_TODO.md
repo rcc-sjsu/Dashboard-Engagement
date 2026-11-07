@@ -3,6 +3,17 @@
 Date: 2026-04-25
 Scope: `apps/server`, `apps/web`, monorepo task wiring
 
+## Engagement definitions
+
+- [x] **Confirm the active-member definition and reporting period** — resolved by the project owner on 2026-11-06.
+  - An official RCC member is active after attending at least one social event and at least one non-social event during the same semester.
+  - Activity is assessed separately each semester. The dashboard shows a selected-semester active count/rate or an All Semesters table; it does not pool active status across semesters.
+  - This replaces the previous question about qualifying events and rolling inactivity expiry, and removes the stakeholder-facing pending-definition placeholder.
+- [ ] **Reconcile stored active-member flags with semester analytics**
+  - Dashboard analytics now calculate semester qualification directly from event attendance.
+  - The import path still invokes the existing `recompute_active_members` RPC. Its database implementation and stored `is_active_member` / `active_member_start_date` fields have not been changed or deployed by this work.
+  - Audit any other consumers of those fields and align their intended reporting period with the confirmed semester rule before migrating the stored logic.
+
 ## Critical
 
 - [x] **API errors are returned as HTTP 200 instead of 5xx**

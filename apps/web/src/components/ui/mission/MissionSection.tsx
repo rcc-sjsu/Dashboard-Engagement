@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import ToggleBar from "@/components/ui/toggle-bar";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { PieChartMajor } from "@/components/ui/mission/pie-chart-major";
 import { PieChartYear } from "@/components/ui/mission/pie-chart-year";
 import { MissionEventsStacked } from "@/components/ui/mission/MissionEventsStacked";
@@ -65,7 +65,7 @@ type MissionData = {
  * - Pie chart (Major vs Year toggle)
  * - Stacked event diversity chart
  */
-export function MissionSection({ data }: { data: MissionData }) {
+export function MissionSection({ data, periodLabel, isFiltered }: { data: MissionData; periodLabel: string; isFiltered: boolean }) {
     // Major vs Year toggle
     const [showMajor, setShowMajor] = useState(true);
 
@@ -100,6 +100,9 @@ export function MissionSection({ data }: { data: MissionData }) {
                     <Card className="flex h-full flex-col">
                         <CardHeader className="items-center pb-2 text-center">
                             <CardTitle>{showMajor ? "Members by Major Category" : "Members by Class Year"}</CardTitle>
+                            <CardDescription>
+                                Registered members{isFiltered ? " who attended an event in this period" : ""} — {periodLabel}
+                            </CardDescription>
                         </CardHeader>
 
                         <div className="flex justify-center ">
@@ -131,6 +134,7 @@ export function MissionSection({ data }: { data: MissionData }) {
                     <MissionEventsStacked
                         events={events}
                         majorOrder={[...MAJOR_ORDER]}
+                        periodLabel={periodLabel}
                     />
                 </div>
             </div>

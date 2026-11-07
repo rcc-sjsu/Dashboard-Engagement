@@ -1,5 +1,5 @@
 from psycopg2.extensions import connection as Connection
-from datetime import date
+from datetime import date, timedelta
 
 BUCKETS = ["0", "1", "2", "3", "4+"]
 
@@ -163,6 +163,23 @@ def build_retention_payload(
             cur.execute(by_major_sql)
         by_major_rows = cur.fetchall()
 
+        if is_filtered:
+            meta_start = semester_start.isoformat()
+            meta_end = (semester_end - timedelta(days=1)).isoformat()
+        else:
+            cur.execute(f"""
+                SELECT MIN(event_date)::date AS start_date,
+                       GREATEST(CURRENT_DATE, MAX(event_date)::date) AS end_date
+                FROM (
+                    SELECT starts_at AS event_date FROM {events_table}
+                    UNION ALL
+                    SELECT joined_at FROM {members_table}
+                ) dates;
+            """)
+            dates = cur.fetchone()
+            meta_start = dates["start_date"].isoformat() if dates["start_date"] else None
+            meta_end = dates["end_date"].isoformat()
+
     overall = _fill_buckets(overall_rows)
 
     grouped = {}
@@ -180,5 +197,6 @@ def build_retention_payload(
         "retention": {
             "attendance_count_distribution_overall": overall,
             "attendance_count_distribution_by_major_category": by_major,
-        }
+        },
+        "meta": {"start": meta_start, "end": meta_end},
     }

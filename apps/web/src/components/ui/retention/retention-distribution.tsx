@@ -8,9 +8,7 @@ import { useState } from "react";
 
 import {
   Card,
-  CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -18,7 +16,7 @@ import {
 
 export const description = "A bar chart";
 
-export function RetentionDistributionChart({ data }: { data: any }) {
+export function RetentionDistributionChart({ data, periodLabel }: { data: any; periodLabel: string }) {
   //true = overall chart, false = stacked chart
   const [overallChart, setOverallChart] = useState(true);
 
@@ -42,8 +40,12 @@ export function RetentionDistributionChart({ data }: { data: any }) {
 
       <Card>
         <CardHeader>
-          <CardTitle>Retention Distribution</CardTitle>
-          <CardDescription>{data?.meta?.start ?? "Aug 2025"} - {data?.meta?.end ?? "Jan 2026"}</CardDescription>
+          <CardTitle>Attendance Frequency</CardTitle>
+          <CardDescription>
+            Number of events attended by all registered members and known attendees,
+            including non-members — {periodLabel}. Registered members with no attendance
+            in this period are included in the 0-event bucket.
+          </CardDescription>
         </CardHeader>
         {/* Pass data to child components */}
         {overallChart ? (

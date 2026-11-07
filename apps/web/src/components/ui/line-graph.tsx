@@ -17,6 +17,7 @@ import {
   ChartTooltipContent,
   type ChartConfig,
 } from "@/components/ui/chart";
+import { MetricDefinition } from "@/components/dashboard/metric-definition";
 
 export const description = "A multiple line chart";
 
@@ -25,16 +26,11 @@ const chartConfig = {
     label: "Registered",
     color: "var(--chart-1)",
   },
-  active: {
-    label: "Active",
-    color: "var(--chart-2)",
-  },
 } satisfies ChartConfig;
 
 type LineChartDatum = {
   month: string; // e.g. "2025-09" or "Sep"
   registered: number;
-  active: number;
 };
 
 export function ChartLineMultiple({
@@ -48,7 +44,9 @@ export function ChartLineMultiple({
     <Card>
       <CardHeader>
         <CardTitle>Member Growth Over Time</CardTitle>
-        <CardDescription>{dateRangeLabel}</CardDescription>
+        <CardDescription>
+          Registered members · {dateRangeLabel}
+        </CardDescription>
       </CardHeader>
 
       <CardContent>
@@ -93,19 +91,17 @@ export function ChartLineMultiple({
               dot={false}
             />
 
-            <Line
-              dataKey="active"
-              type="monotone"
-              name={chartConfig.active.label}
-              stroke={chartConfig.active.color}
-              strokeWidth={2}
-              dot={false}
-            />
           </LineChart>
         </ChartContainer>
       </CardContent>
 
-      <CardFooter />
+      <CardFooter>
+        <MetricDefinition
+          title="Member Growth Over Time"
+          definition="Cumulative registrations within the selected period, grouped by month.\nWith a semester selected, only registrations during that semester are included. Unknown registration dates are excluded from the timeline.\nActive membership is measured separately for each semester in the Active Members card or table."
+          methodologyHref="/methodology#member-growth"
+        />
+      </CardFooter>
     </Card>
   );
 }

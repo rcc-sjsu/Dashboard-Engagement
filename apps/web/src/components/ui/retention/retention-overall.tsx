@@ -18,7 +18,7 @@ export const description = "A bar chart";
 
 const chartConfig = {
   count: {
-    label: "Attendees",
+    label: "People",
     color: "var(--chart-1)",
   },
 } satisfies ChartConfig;
@@ -31,11 +31,11 @@ export function RetentionOverall({ data }: { data: any }) {
         count: item.people,
       }))
     : [
-        { bucket: "0 events", count: 186 },
-        { bucket: "1 event", count: 305 },
-        { bucket: "2 events", count: 237 },
-        { bucket: "3 events", count: 73 },
-        { bucket: "4+ events", count: 209 },
+        { bucket: "0 events", count: 0 },
+        { bucket: "1 event", count: 0 },
+        { bucket: "2 events", count: 0 },
+        { bucket: "3 events", count: 0 },
+        { bucket: "4+ events", count: 0 },
       ];
 
   return (
@@ -54,7 +54,7 @@ export function RetentionOverall({ data }: { data: any }) {
             className="pr-2"
             axisLine={false}
             label={{
-              value: "Number of Members",
+              value: "Number of People",
               angle: -90,
               position: "insideLeft",
             }}
